@@ -1,0 +1,19 @@
+# Define o comportamento padrão para arquivos de texto.
+# Isso normaliza as quebras de linha para LF no repositório.
+* text=auto eol=lf
+
+# Garante que arquivos de texto comuns sejam tratados corretamente.
+*.html text
+*.css text
+*.js text
+*.py text
+*.md text
+*.json text
+*.txt text
+
+# Garante que arquivos de lote do Windows sempre usem quebras de linha CRLF.
+*.bat text eol=crlf
+
+# Define arquivos binários para que o Git não os modifique.
+*.png binary
+*.jpg binary
