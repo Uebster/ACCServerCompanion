@@ -200,26 +200,31 @@
                     </div>
                     <template x-for="(session, idx) in event.sessions" :key="idx">
                         <div class="session-card">
-                            <select x-model="session.sessionType">
-                                <option value="P">Practice</option>
-                                <option value="Q">Qualify</option>
-                                <option value="R">Race</option>
-                            </select>
-                            <label>Duração (min) <input type="number" x-model="session.sessionDurationMinutes"></label>
-                            <label>Hora <input type="number" min="0" max="23" x-model="session.hourOfDay"></label>
-                            <label>Dia <select x-model="session.dayOfWeekend">
-                                <option value="1">Sexta</option>
-                                <option value="2">Sábado</option>
-                                <option value="3">Domingo</option>
-                            </select></label>
-                            <label class="multiplier-row">
-                                <span>Multiplicador</span>
+                            <div class="field-block">
+                                <label>Tipo</label>
+                                <select x-model="session.sessionType">
+                                    <option value="P">Practice</option>
+                                    <option value="Q">Qualify</option>
+                                    <option value="R">Race</option>
+                                </select>
+                            </div>
+                            <div class="field-block"><label>Duração (min)</label><input type="number" x-model.number="session.sessionDurationMinutes"></div>
+                            <div class="field-block"><label>Hora</label><input type="number" min="0" max="23" x-model.number="session.hourOfDay"></div>
+                            <div class="field-block">
+                                <label>Dia</label>
+                                <select x-model.number="session.dayOfWeekend">
+                                    <option value="1">Sexta</option>
+                                    <option value="2">Sábado</option>
+                                    <option value="3">Domingo</option>
+                                </select>
+                            </div>
+                            <div class="field-block multiplier-field">
+                                <label>Multiplicador</label>
                                 <div class="multiplier-control">
                                     <input type="number" min="1" max="24" x-model.number="session.timeMultiplier">
                                     <span class="value-pill" x-text="session.timeMultiplier + 'x'"></span>
                                 </div>
-                                <small>Use 1 para ritmo normal e valores maiores para acelerar o tempo da sessão.</small>
-                            </label>
+                            </div>
                             <button @click="removeSession(idx)" class="btn-remove">✕</button>
                         </div>
                     </template>

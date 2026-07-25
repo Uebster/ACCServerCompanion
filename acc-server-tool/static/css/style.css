@@ -88,16 +88,12 @@ input[type="checkbox"] { width: 20px; height: 20px; accent-color: var(--accent);
 .weather-options .field-block { grid-column: 1 / -1; }
 .check-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); }
 .sessions { margin: 20px 0; }
-.session-card { background: var(--card); padding: 15px; margin: 10px 0; border-radius: 10px; display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); align-items: start; gap: 12px; border-left: 3px solid var(--accent); box-shadow: var(--shadow); }
+.session-card { background: var(--card); padding: 15px; margin: 10px 0; border-radius: 10px; display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); align-items: end; gap: 12px; border-left: 3px solid var(--accent); box-shadow: var(--shadow); }
 .session-card select, .session-card input { width: 100%; }
-.session-card .btn-remove { justify-self: start; }
-.multiplier-row { display: grid; grid-template-columns: 100px 1fr; align-items: center; gap: 10px; grid-column: span 2; }
-.multiplier-row span { font-weight: 600; }
-.multiplier-row small { grid-column: 2; color: var(--muted); font-size: 0.8rem; }
+.session-card .btn-remove { justify-self: end; align-self: center; }
+.multiplier-field { grid-column: span 2; }
 .multiplier-control { display: flex; align-items: center; gap: 8px; }
 .multiplier-control input { width: 70px; }
-.multiplier-field small { color: var(--muted); font-size: 0.8rem; margin-top: 4px; }
-.advanced-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-top: 16px; }
 .advanced-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 16px; box-shadow: var(--shadow); }
 .advanced-card h3 { color: var(--accent-strong); margin-bottom: 8px; }
 .advanced-card p { color: var(--muted); margin-bottom: 12px; line-height: 1.45; }
