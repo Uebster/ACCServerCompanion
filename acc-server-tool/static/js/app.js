@@ -50,9 +50,21 @@ function accApp() {
                         this.maxPits = this.config.maxConnections || 30;
                     } else if (filename === 'settings.json') {
                         this.settings = data;
+                        // Garante que os valores de requisito existam para evitar 'undefined'
+                        if (!('safetyRatingRequirement' in this.settings)) {
+                            this.settings.safetyRatingRequirement = 0;
+                        }
+                        if (!('racecraftRatingRequirement' in this.settings)) {
+                            this.settings.racecraftRatingRequirement = 0;
+                        }
                     } else if (filename === 'event.json') {
                         this.event = data;
                         if (!this.event.sessions) this.event.sessions = [];
+                        // Garante valores padrão para campos que podem estar ausentes
+                        if (!('preRaceWaitingTimeSeconds' in this.event)) this.event.preRaceWaitingTimeSeconds = 80;
+                        if (!('postQualySeconds' in this.event)) this.event.postQualySeconds = 15;
+                        if (!('postRaceSeconds' in this.event)) this.event.postRaceSeconds = 15;
+                        if (!('metaData' in this.event)) this.event.metaData = "";
                         // Atualiza maxPits se track selecionada
                         if (this.event.track && this.tracks[this.event.track]) {
                             this.maxPits = this.tracks[this.event.track].pitboxes;

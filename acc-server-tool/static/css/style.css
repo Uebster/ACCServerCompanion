@@ -102,6 +102,7 @@ input[type="checkbox"] { width: 20px; height: 20px; accent-color: var(--accent);
 .advanced-card label {
     /* Garante que os checkboxes em 'Regras de assistência' fiquem alinhados */
     justify-content: space-between;
+    margin-bottom: 8px; /* Adicionado para espaçamento */
 }
 .entry-row, .bop-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 8px; align-items: center; margin-bottom: 8px; }
 .entry-row input[type="text"], .entry-row input[type="number"], .bop-row input[type="text"], .bop-row input[type="number"] { width: 100%; }
@@ -110,7 +111,20 @@ input[type="checkbox"] { width: 20px; height: 20px; accent-color: var(--accent);
 .admin-list { list-style: none; display: grid; gap: 8px; padding: 0; margin: 0; }
 .admin-list li { color: var(--muted); line-height: 1.45; }
 .admin-list code { color: var(--accent-strong); font-family: Consolas, monospace; }
-.btn-remove { background: var(--danger); border: none; color: #fff; padding: 4px 12px; border-radius: 6px; cursor: pointer; }
+.btn-remove {
+    background: var(--danger);
+    border: none;
+    color: #fff;
+    width: 28px; /* Tamanho fixo */
+    height: 28px; /* Tamanho fixo */
+    padding: 0; /* Remove o padding padrão */
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex; /* Usa flexbox para centralizar o 'X' */
+    align-items: center; /* Centraliza verticalmente */
+    justify-content: center; /* Centraliza horizontalmente */
+    justify-self: end; /* Alinha o botão à direita na célula da grid */
+}
 .btn-add { background: var(--accent); border: none; color: #fff; padding: 8px 20px; border-radius: 8px; cursor: pointer; font-weight: 700; }
 button { padding: 8px 20px; border-radius: 8px; border: 1px solid var(--border); background: var(--card); color: var(--text); cursor: pointer; transition: 0.2s ease; }
 button:hover { background: var(--soft); border-color: var(--accent); }
@@ -135,4 +149,88 @@ button:hover { background: var(--soft); border-color: var(--accent); }
     border: none;
     padding: 0;
     color: var(--muted);
+}
+
+/* Layout em colunas para abas de formulário */
+.form-columns-wrapper {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 20px;
+    max-width: none; /* Ocupa todo o espaço da .content */
+}
+
+.form-column {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.form-column > label {
+    align-items: flex-start;
+}
+
+/* Sistema de Tooltip customizado */
+.tooltip-label {
+    position: relative;
+    cursor: help;
+}
+.tooltip-label::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    margin-bottom: 10px;
+    background-color: var(--accent-strong);
+    color: var(--sidebar);
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 0.9em;
+    font-weight: 500;
+    line-height: 1.4;
+    white-space: pre-wrap;
+    width: max-content;
+    max-width: 320px;
+    text-align: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease 0.4s, transform 0.2s ease 0.4s;
+    z-index: 10;
+}
+.tooltip-label::before {
+    content: '';
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    margin-bottom: 4px;
+    border-width: 6px;
+    border-style: solid;
+    border-color: var(--accent-strong) transparent transparent transparent;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease 0.4s, transform 0.2s ease 0.4s;
+    z-index: 10;
+}
+.tooltip-label:hover::after,
+.tooltip-label:hover::before {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* Layout em colunas para a aba Avançado */
+.advanced-columns-wrapper {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    align-items: start;
+}
+
+.advanced-column {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
 }

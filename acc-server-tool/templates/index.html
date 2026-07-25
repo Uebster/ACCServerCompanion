@@ -32,35 +32,20 @@
             </div>
         </nav>
         <main class="content">
-            <div class="help-box intro-help">
-                <strong>Primeira vez?</strong> Comece pelo preset treino/qualify/race, escolha a pista e defina nome, senhas e filtros. Se quiser, use o guia abaixo para criar um servidor simples e seguro.
-                <span class="tooltip" title="Este painel foi pensado para quem está começando e quer algo simples, seguro e explicativo.">?</span>
-            </div>
             <!-- Aba Network -->
             <div x-show="activeTab=='network'">
                 <h2>Configuração de Rede</h2>
-                <div class="help-box">
-                    <strong>Guia rápido:</strong> aqui você define as portas de comunicação do servidor. UDP costuma lidar com o estado da corrida e posições; TCP cuida da conexão principal. Se você não sabe, 9201 para as duas é um ponto de partida seguro.
-                    <span class="tooltip" title="Se essas portas estiverem em uso, o servidor pode não subir. Use valores únicos e evite conflitos com outros aplicativos.">?</span>
-                </div>
-                <div class="help-box">
-                    <strong>Para LAN:</strong> se você vai jogar com amigos em rede local, use o mesmo número de portas e deixe “LAN Discovery” ativado. Para jogar com pessoas na mesma casa, Hamachi ou Radmin podem ajudar a criar uma rede estável.
+                <div class="info-card wide">
+                    <p><strong>Dica:</strong> Para jogar online apenas com amigos (sem um servidor dedicado), ative "LAN Discovery" e peça para todos os seus amigos se conectarem na mesma rede VPN usando um programa como <strong>Hamachi</strong> ou <strong>Radmin VPN</strong>. Assim, o servidor aparecerá para eles na busca de servidores LAN.</p>
+                    <p style="margin-top: 8px;"><strong>Atenção:</strong> Só altere as portas UDP e TCP se você souber o que está fazendo e tiver conhecimento sobre redirecionamento de portas (port forwarding).</p>
                 </div>
                 <div class="form-group">
-                    <div class="info-card">
-                        <strong>O que é isso?</strong>
-                        <p>UDP e TCP são as portas de comunicação do servidor. Se você não sabe, use 9201 para as duas e mantenha valores diferentes apenas se você tiver um motivo técnico.</p>
-                    </div>
-                    <label class="field-block">UDP Port <div class="field-control"><input type="number" x-model.number="config.udpPort"><span class="value-pill" x-text="config.udpPort"></span></div></label>
-                    <label class="field-block">TCP Port <div class="field-control"><input type="number" x-model.number="config.tcpPort"><span class="value-pill" x-text="config.tcpPort"></span></div></label>
-                    <label class="field-block">Max Connections <div class="field-control"><input type="range" min="1" :max="maxPits" x-model.number="config.maxConnections"><span class="value-pill" x-text="config.maxConnections"></span></div></label>
-                    <div class="info-card">
-                        <strong>Registrado na lobby?</strong>
-                        <p>Se estiver ligado, o servidor pode aparecer para outros jogadores. Se estiver desligado, ele fica mais discreto e é melhor para eventos privados.</p>
-                    </div>
-                    <label>Register to Lobby <input type="checkbox" x-model="config.registerToLobby"></label>
-                    <label>LAN Discovery <input type="checkbox" x-model="config.lanDiscovery"></label>
-                    <label class="field-block">IP público <div class="field-control"><input type="text" x-model="config.publicIP" placeholder="Ex.: 203.0.113.10"><span class="value-pill" x-text="config.publicIP || '—'"></span></div></label>
+                    <label class="field-block tooltip-label" data-tooltip="Porta para comunicação do estado da corrida (posições, etc).">UDP Port <div class="field-control"><input type="number" x-model.number="config.udpPort"><span class="value-pill" x-text="config.udpPort"></span></div></label>
+                    <label class="field-block tooltip-label" data-tooltip="Porta principal para os pilotos se conectarem ao servidor.">TCP Port <div class="field-control"><input type="number" x-model.number="config.tcpPort"><span class="value-pill" x-text="config.tcpPort"></span></div></label>
+                    <label class="field-block tooltip-label" data-tooltip="Número máximo de carros permitidos no servidor. Limitado pelo número de pitboxes da pista.">Max Connections <div class="field-control"><input type="range" min="1" :max="maxPits" x-model.number="config.maxConnections"><span class="value-pill" x-text="config.maxConnections"></span></div></label>
+                    <label class="tooltip-label" data-tooltip="Se ativado, o servidor aparecerá na lista de servidores públicos da comunidade.">Register to Lobby <input type="checkbox" x-model="config.registerToLobby"></label>
+                    <label class="tooltip-label" data-tooltip="Se ativado, o servidor pode ser encontrado por outros jogadores na mesma rede local (LAN).">LAN Discovery <input type="checkbox" x-model="config.lanDiscovery"></label>
+                    <label class="field-block tooltip-label" data-tooltip="Define um IP público manualmente. Útil se o servidor estiver atrás de um gateway ou NAT.">IP público <div class="field-control"><input type="text" x-model="config.publicIP" placeholder="Ex.: 203.0.113.10"><span class="value-pill" x-text="config.publicIP || '—'"></span></div></label>
                     <div class="action-row">
                         <button @click="saveAndStart('configuration.json', config)">Salvar e iniciar</button>
                         <button @click="save('configuration.json', config)">Salvar</button>
@@ -71,85 +56,72 @@
             <!-- Aba Server (settings) -->
             <div x-show="activeTab=='server'">
                 <h2>Configuração do Servidor</h2>
-                <div class="help-box">
-                    <strong>Nome e acesso:</strong> defina o nome que aparecerá para os pilotos, além das senhas de entrada e admin.
-                    <span class="tooltip" title="Use uma senha simples para eventos privados. Não compartilhe a senha admin com qualquer pessoa desconhecida.">?</span>
-                </div>
-                <div class="help-box">
-                    <strong>Filtros de entrada:</strong> SA mede a segurança do piloto, Racecraft mede o comportamento em pista e pontuação geral mede o nível geral. Se não quiser limitar ninguém, deixe esses valores em 0.
-                </div>
-                <div class="form-group">
-                    <div class="info-card">
-                        <strong>O que significa cada filtro?</strong>
-                        <ul>
-                            <li><strong>SA</strong>: mede a segurança do piloto. Valores mais altos exigem menos erros e mais respeito.</li>
-                            <li><strong>Racecraft</strong>: mede se o piloto costuma correr bem e de forma limpa. É um filtro de comportamento.</li>
-                            <li><strong>Pontuação geral</strong>: é um resumo do nível do piloto. Funciona como um filtro de experiência.</li>
-                        </ul>
+                <div class="form-columns-wrapper">
+                    <!-- Coluna da Esquerda -->
+                    <div class="form-column">
+                        <label class="tooltip-label" data-tooltip="O nome que será exibido para os jogadores na lista de servidores.">Nome do Servidor <input type="text" x-model="settings.serverName"></label>
+                        <label class="tooltip-label" data-tooltip="Senha que os pilotos devem usar para entrar no servidor.">Senha (pilotos)
+                            <div class="password-wrapper">
+                                <input :type="visibility.password ? 'text' : 'password'" x-model="settings.password">
+                                <button type="button" @click="togglePassword('password')" class="btn-icon" title="Mostrar/Ocultar senha">
+                                    <svg x-show="!visibility.password" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0z"/><path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8zm8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z"/></svg>
+                                    <svg x-show="visibility.password" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" style="display: none;"><path d="m10.79 12.912-1.614-1.615a3.5 3.5 0 0 1-4.474-4.474l-2.06-2.06C.938 6.278 0 8 0 8s3 5.5 8 5.5a7.029 7.029 0 0 0 2.79-.588zM5.21 3.088A7.028 7.028 0 0 1 8 2.5c5 0 8 5.5 8 5.5s-.939 1.721-2.641 3.238l-2.062-2.062a3.5 3.5 0 0 0-4.474-4.474L5.21 3.089z"/><path d="M5.525 7.646a2.5 2.5 0 0 0 2.829 2.829l-2.83-2.829zm4.95.708-2.829-2.83a2.5 2.5 0 0 1 2.829 2.829zm3.171 6-12-12 .708-.708 12 12-.708.708z"/></svg>
+                                </button>
+                            </div>
+                        </label>
+                        <label class="tooltip-label" data-tooltip="Senha para espectadores entrarem no servidor. Deve ser diferente da senha dos pilotos.">Senha Espectador
+                            <div class="password-wrapper">
+                                <input :type="visibility.spectatorPassword ? 'text' : 'password'" x-model="settings.spectatorPassword">
+                                <button type="button" @click="togglePassword('spectatorPassword')" class="btn-icon" title="Mostrar/Ocultar senha">
+                                    <svg x-show="!visibility.spectatorPassword" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0z"/><path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8zm8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z"/></svg>
+                                    <svg x-show="visibility.spectatorPassword" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" style="display: none;"><path d="m10.79 12.912-1.614-1.615a3.5 3.5 0 0 1-4.474-4.474l-2.06-2.06C.938 6.278 0 8 0 8s3 5.5 8 5.5a7.029 7.029 0 0 0 2.79-.588zM5.21 3.088A7.028 7.028 0 0 1 8 2.5c5 0 8 5.5 8 5.5s-.939 1.721-2.641 3.238l-2.062-2.062a3.5 3.5 0 0 0-4.474-4.474L5.21 3.089z"/><path d="M5.525 7.646a2.5 2.5 0 0 0 2.829 2.829l-2.83-2.829zm4.95.708-2.829-2.83a2.5 2.5 0 0 1 2.829 2.829zm3.171 6-12-12 .708-.708 12 12-.708.708z"/></svg>
+                                </button>
+                            </div>
+                        </label>
+                        <label class="tooltip-label" data-tooltip="Senha para obter privilégios de administrador no chat do jogo.">Senha Admin
+                            <div class="password-wrapper">
+                                <input :type="visibility.adminPassword ? 'text' : 'password'" x-model="settings.adminPassword">
+                                <button type="button" @click="togglePassword('adminPassword')" class="btn-icon" title="Mostrar/Ocultar senha">
+                                    <svg x-show="!visibility.adminPassword" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0z"/><path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8zm8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z"/></svg>
+                                    <svg x-show="visibility.adminPassword" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" style="display: none;"><path d="m10.79 12.912-1.614-1.615a3.5 3.5 0 0 1-4.474-4.474l-2.06-2.06C.938 6.278 0 8 0 8s3 5.5 8 5.5a7.029 7.029 0 0 0 2.79-.588zM5.21 3.088A7.028 7.028 0 0 1 8 2.5c5 0 8 5.5 8 5.5s-.939 1.721-2.641 3.238l-2.062-2.062a3.5 3.5 0 0 0-4.474-4.474L5.21 3.089z"/><path d="M5.525 7.646a2.5 2.5 0 0 0 2.829 2.829l-2.83-2.829zm4.95.708-2.829-2.83a2.5 2.5 0 0 1 2.829 2.829zm3.171 6-12-12 .708-.708 12 12-.708.708z"/></svg>
+                                </button>
+                            </div>
+                        </label>
+                        <label class="tooltip-label" data-tooltip="Restringe o servidor a uma classe de carro específica (GT3, GT4, etc). 'FreeForAll' permite qualquer carro.">Classe de Carros 
+                            <select x-model="settings.carGroup">
+                                <template x-for="g in carGroups">
+                                    <option :value="g" x-text="g"></option>
+                                </template>
+                            </select>
+                        </label>
+                        <label class="field-block tooltip-label" data-tooltip="Safety Rating (SA) mínimo que um piloto precisa ter para entrar. Valor de 0 a 99.">SA mínimo <div class="field-control"><input type="range" min="0" max="99" x-model.number="settings.safetyRatingRequirement"><span class="value-pill" x-text="settings.safetyRatingRequirement + ' / 99'"></span></div></label>
+                        <label class="field-block tooltip-label" data-tooltip="Racecraft (RC) mínimo que um piloto precisa ter para entrar. Valor de 0 a 99.">Racecraft mínimo <div class="field-control"><input type="range" min="0" max="99" x-model.number="settings.racecraftRatingRequirement"><span class="value-pill" x-text="settings.racecraftRatingRequirement + ' / 99'"></span></div></label>
+                        <label class="field-block tooltip-label" data-tooltip="Número de medalhas da pista que o piloto precisa ter. Valor de 0 a 3.">Medalhas da Pista <div class="field-control"><input type="range" min="0" max="3" x-model.number="settings.trackMedalsRequirement"><span class="value-pill" x-text="settings.trackMedalsRequirement + ' / 3'"></span></div></label>
                     </div>
-                    <label>Nome do Servidor <input type="text" x-model="settings.serverName"></label>
-                    <label>Senha (pilotos)
-                        <div class="password-wrapper">
-                            <input :type="visibility.password ? 'text' : 'password'" x-model="settings.password">
-                            <button type="button" @click="togglePassword('password')" class="btn-icon" title="Mostrar/Ocultar senha">
-                                <svg x-show="!visibility.password" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0z"/><path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8zm8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z"/></svg>
-                                <svg x-show="visibility.password" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" style="display: none;"><path d="m10.79 12.912-1.614-1.615a3.5 3.5 0 0 1-4.474-4.474l-2.06-2.06C.938 6.278 0 8 0 8s3 5.5 8 5.5a7.029 7.029 0 0 0 2.79-.588zM5.21 3.088A7.028 7.028 0 0 1 8 2.5c5 0 8 5.5 8 5.5s-.939 1.721-2.641 3.238l-2.062-2.062a3.5 3.5 0 0 0-4.474-4.474L5.21 3.089z"/><path d="M5.525 7.646a2.5 2.5 0 0 0 2.829 2.829l-2.83-2.829zm4.95.708-2.829-2.83a2.5 2.5 0 0 1 2.829 2.829zm3.171 6-12-12 .708-.708 12 12-.708.708z"/></svg>
-                            </button>
-                        </div>
-                    </label>
-                    <label>Senha Espectador
-                        <div class="password-wrapper">
-                            <input :type="visibility.spectatorPassword ? 'text' : 'password'" x-model="settings.spectatorPassword">
-                            <button type="button" @click="togglePassword('spectatorPassword')" class="btn-icon" title="Mostrar/Ocultar senha">
-                                <svg x-show="!visibility.spectatorPassword" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0z"/><path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8zm8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z"/></svg>
-                                <svg x-show="visibility.spectatorPassword" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" style="display: none;"><path d="m10.79 12.912-1.614-1.615a3.5 3.5 0 0 1-4.474-4.474l-2.06-2.06C.938 6.278 0 8 0 8s3 5.5 8 5.5a7.029 7.029 0 0 0 2.79-.588zM5.21 3.088A7.028 7.028 0 0 1 8 2.5c5 0 8 5.5 8 5.5s-.939 1.721-2.641 3.238l-2.062-2.062a3.5 3.5 0 0 0-4.474-4.474L5.21 3.089z"/><path d="M5.525 7.646a2.5 2.5 0 0 0 2.829 2.829l-2.83-2.829zm4.95.708-2.829-2.83a2.5 2.5 0 0 1 2.829 2.829zm3.171 6-12-12 .708-.708 12 12-.708.708z"/></svg>
-                            </button>
-                        </div>
-                    </label>
-                    <label>Senha Admin
-                        <div class="password-wrapper">
-                            <input :type="visibility.adminPassword ? 'text' : 'password'" x-model="settings.adminPassword">
-                            <button type="button" @click="togglePassword('adminPassword')" class="btn-icon" title="Mostrar/Ocultar senha">
-                                <svg x-show="!visibility.adminPassword" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0z"/><path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8zm8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z"/></svg>
-                                <svg x-show="visibility.adminPassword" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" style="display: none;"><path d="m10.79 12.912-1.614-1.615a3.5 3.5 0 0 1-4.474-4.474l-2.06-2.06C.938 6.278 0 8 0 8s3 5.5 8 5.5a7.029 7.029 0 0 0 2.79-.588zM5.21 3.088A7.028 7.028 0 0 1 8 2.5c5 0 8 5.5 8 5.5s-.939 1.721-2.641 3.238l-2.062-2.062a3.5 3.5 0 0 0-4.474-4.474L5.21 3.089z"/><path d="M5.525 7.646a2.5 2.5 0 0 0 2.829 2.829l-2.83-2.829zm4.95.708-2.829-2.83a2.5 2.5 0 0 1 2.829 2.829zm3.171 6-12-12 .708-.708 12 12-.708.708z"/></svg>
-                            </button>
-                        </div>
-                    </label>
-                    <label>Classe de Carros 
-                        <select x-model="settings.carGroup">
-                            <template x-for="g in carGroups">
-                                <option :value="g" x-text="g"></option>
-                            </template>
-                        </select>
-                    </label>
-                    <label class="field-block">SA mínimo <div class="field-control"><input type="number" min="1" max="99" x-model.number="settings.safetyRatingRequirement"><span class="value-pill" x-text="settings.safetyRatingRequirement + ' / 99'"></span></div></label>
-                    <label class="field-block">Racecraft mínimo <div class="field-control"><input type="number" min="1" max="99" x-model.number="settings.minimumRacecraft"><span class="value-pill" x-text="settings.minimumRacecraft + ' / 99'"></span></div></label>
-                    <label class="field-block">Medalhas da Pista <div class="field-control"><input type="number" min="0" max="3" x-model.number="settings.trackMedalsRequirement"><span class="value-pill" x-text="settings.trackMedalsRequirement + ' / 3'"></span></div></label>
-                    <label>Desqualificação automática <input type="checkbox" x-model="settings.allowAutoDQ"></label>
-                    <label class="field-block">Volta de formação <div class="field-control"><select x-model.number="settings.shortFormationLap"><option :value="1">Curta</option><option :value="0">Longa</option></select><span class="value-pill" x-text="settings.shortFormationLap ? 'Curta' : 'Longa'"></span></div></label>
-                    <label>Bloqueio de corrida <input type="checkbox" x-model="settings.isRaceLocked"></label>
-                    <label>Sorteio de pista quando estiver vazia <input type="checkbox" x-model="settings.randomizeTrackWhenEmpty"></label>
-                    <label>Ignorar desconexões prematuras <input type="checkbox" x-model="settings.ignorePrematureDisconnects"></label>
-                    <label>Gerar dump de entry list <input type="checkbox" x-model="settings.dumpEntryList"></label>
-                    <label>Gerar leaderboards <input type="checkbox" x-model="settings.dumpLeaderboards"></label>
-                    <label class="field-block">Caminho central de entry list <div class="field-control"><input type="text" x-model="settings.centralEntryListPath"><span class="value-pill" x-text="settings.centralEntryListPath || '—'"></span></div></label>
-                    <label class="field-block">Tipo de volta de formação <div class="field-control"><select x-model.number="settings.formationLapType"><option value="1">1 - Desligada</option><option value="2">2 - Curta</option><option value="3">3 - Completa</option></select><span class="value-pill" x-text="settings.formationLapType"></span></div></label>
-                    <div class="action-row">
-                        <button @click="saveAndStart('settings.json', settings)">Salvar e iniciar</button>
-                        <button @click="save('settings.json', settings)">Salvar</button>
-                        <button @click="load('settings.json')">Recarregar</button>
+                    <!-- Coluna da Direita -->
+                    <div class="form-column">
+                        <label class="tooltip-label" data-tooltip="Se desativado, o servidor aplicará uma penalidade de Stop&Go em vez de desqualificar automaticamente um piloto.">Desqualificação automática <input type="checkbox" x-model="settings.allowAutoDQ"></label>
+                        <label class="tooltip-label" data-tooltip="Se ativado, impede que novos pilotos entrem no servidor durante uma sessão de corrida.">Bloqueio de corrida <input type="checkbox" x-model="settings.isRaceLocked"></label>
+                        <label class="tooltip-label" data-tooltip="Se ativado, o servidor mudará para uma pista aleatória quando o último piloto sair.">Sorteio de pista quando estiver vazia <input type="checkbox" x-model="settings.randomizeTrackWhenEmpty"></label>
+                        <label class="tooltip-label" data-tooltip="Configuração para ignorar desconexões de curta duração. É recomendado deixar ativado.">Ignorar desconexões prematuras <input type="checkbox" x-model="settings.ignorePrematureDisconnects"></label>
+                        <label class="tooltip-label" data-tooltip="Salva a lista de pilotos (entrylist) no final de cada sessão de Qualificação.">Gerar dump de entry list <input type="checkbox" x-model="settings.dumpEntryList"></label>
+                        <label class="tooltip-label" data-tooltip="Salva os resultados da sessão em arquivos .json na pasta 'results'.">Gerar leaderboards <input type="checkbox" x-model="settings.dumpLeaderboards"></label>
+                        <label class="field-block tooltip-label" data-tooltip="Define se a volta de formação será curta (padrão) ou longa.">Volta de formação <div class="field-control"><select x-model.number="settings.shortFormationLap"><option :value="1">Curta</option><option :value="0">Longa</option></select><span class="value-pill" x-text="settings.shortFormationLap ? 'Curta' : 'Longa'"></span></div></label>
+                        <label class="field-block tooltip-label" data-tooltip="Define o tipo de volta de formação: Padrão com controle de posição (3), largada livre (1), ou estilo antigo com limiter (0).">Tipo de volta de formação <div class="field-control"><select x-model.number="settings.formationLapType"><option value="3">3 - Padrão</option><option value="1">1 - Livre (manual)</option><option value="0">0 - Antiga (limiter)</option></select><span class="value-pill" x-text="settings.formationLapType"></span></div></label>
+                        <label class="field-block tooltip-label" data-tooltip="Permite usar um arquivo 'entrylist.json' de um caminho centralizado para múltiplos servidores.">Caminho central de entry list <div class="field-control"><input type="text" x-model="settings.centralEntryListPath"><span class="value-pill" x-text="settings.centralEntryListPath || '—'"></span></div></label>
                     </div>
+                </div>
+                <div class="action-row" style="justify-content: flex-start; margin-top: 20px;">
+                    <button @click="saveAndStart('settings.json', settings)">Salvar e iniciar</button>
+                    <button @click="save('settings.json', settings)">Salvar</button>
+                    <button @click="load('settings.json')">Recarregar</button>
                 </div>
             </div>
             <!-- Aba Event (com seletor de pista e sessões) -->
             <div x-show="activeTab=='event'">
                 <h2>Evento</h2>
-                <div class="help-box">
-                        <strong>Montando seu evento:</strong> escolha a pista, depois defina as sessões. Você pode usar modelos prontos ou montar do zero. O objetivo é simples: horário, duração e velocidade da sessão.
-                    <span class="tooltip" title="Se você quiser um evento simples, use um modelo pronto. Se quiser algo mais personalizado, ajuste as sessões manualmente.">?</span>
-                </div>
                 <div class="template-bar">
-                    <label>Modelo de sessões
+                    <label class="tooltip-label" data-tooltip="Carrega uma configuração de sessões pré-definida.">Modelo de sessões
                         <select x-model="sessionTemplate" @change="applySessionTemplate()">
                             <option value="">-- montar do zero --</option>
                             <template x-for="(value, key) in sessionPresets" :key="key">
@@ -167,40 +139,26 @@
                     </template>
                 </div>
                 <div class="weather-params">
-                    <div class="info-card wide">
-                        <strong>Como funciona o clima?</strong>
-                        <p>Temperatura é o calor base da pista. Nuvens e chuva influenciam a visibilidade e a aderência. A aleatoriedade define quão “vivo” o clima fica: 0 é estático e valores maiores fazem o tempo variar mais.</p>
-                    </div>
                     <div class="weather-controls">
-                        <label class="field-block">Temp. Ambiente <div class="field-control"><input type="range" min="-10" max="50" x-model.number="event.ambientTemp"><span class="value-pill" x-text="event.ambientTemp + '°C'"></span></div></label>
-                        <label class="field-block">Nuvens <div class="field-control"><input type="range" min="0" max="1" step="0.1" x-model.number="event.cloudLevel"><span class="value-pill" x-text="event.cloudLevel"></span></div></label>
-                        <label class="field-block">Chuva <div class="field-control"><input type="range" min="0" max="1" step="0.1" x-model.number="event.rain"><span class="value-pill" x-text="event.rain"></span></div></label>
-                        <label class="field-block">Aleatoriedade <div class="field-control"><input type="range" min="0" max="10" x-model.number="event.weatherRandomness"><span class="value-pill" x-text="event.weatherRandomness"></span></div></label>
+                        <label class="field-block tooltip-label" data-tooltip="Temperatura ambiente base em graus Celsius.">Temp. Ambiente <div class="field-control"><input type="range" min="-10" max="50" x-model.number="event.ambientTemp"><span class="value-pill" x-text="event.ambientTemp + '°C'"></span></div></label>
+                        <label class="field-block tooltip-label" data-tooltip="Nível de nuvens (0.0 a 1.0). Afeta a chance de chuva e a temperatura da pista.">Nuvens <div class="field-control"><input type="range" min="0" max="1" step="0.1" x-model.number="event.cloudLevel"><span class="value-pill" x-text="event.cloudLevel"></span></div></label>
+                        <label class="field-block tooltip-label" data-tooltip="Define o nível de chuva base (0.0 a 1.0).">Chuva <div class="field-control"><input type="range" min="0" max="1" step="0.1" x-model.number="event.rain"><span class="value-pill" x-text="event.rain"></span></div></label>
+                        <label class="field-block tooltip-label" data-tooltip="Define o quão dinâmico o clima será. 0 = estático, valores maiores trazem mais variações.">Aleatoriedade <div class="field-control"><input type="range" min="0" max="10" x-model.number="event.weatherRandomness"><span class="value-pill" x-text="event.weatherRandomness"></span></div></label>
                     </div>
                     <div class="weather-times">
-                        <label class="field-block">Tempo de espera pré-corrida (s) <div class="field-control"><input type="number" x-model.number="event.preRaceWaitingTimeSeconds"><span class="value-pill" x-text="event.preRaceWaitingTimeSeconds"></span></div></label>
-                        <label class="field-block">Tempo entre qualy e corrida (s) <div class="field-control"><input type="number" x-model.number="event.postQualySeconds"><span class="value-pill" x-text="event.postQualySeconds"></span></div></label>
-                        <label class="field-block">Tempo pós-corrida (s) <div class="field-control"><input type="number" x-model.number="event.postRaceSeconds"><span class="value-pill" x-text="event.postRaceSeconds"></span></div></label>
+                        <label class="field-block tooltip-label" data-tooltip="Tempo de espera em segundos antes do início da corrida.">Tempo de espera pré-corrida (s) <div class="field-control"><input type="number" x-model.number="event.preRaceWaitingTimeSeconds"><span class="value-pill" x-text="event.preRaceWaitingTimeSeconds"></span></div></label>
+                        <label class="field-block tooltip-label" data-tooltip="Tempo de espera em segundos após a qualificação e antes da corrida.">Tempo entre qualy e corrida (s) <div class="field-control"><input type="number" x-model.number="event.postQualySeconds"><span class="value-pill" x-text="event.postQualySeconds"></span></div></label>
+                        <label class="field-block tooltip-label" data-tooltip="Tempo adicional em segundos após o fim da corrida, antes do próximo evento.">Tempo pós-corrida (s) <div class="field-control"><input type="number" x-model.number="event.postRaceSeconds"><span class="value-pill" x-text="event.postRaceSeconds"></span></div></label>
                     </div>
                     <div class="weather-options">
-                        <label class="check-row">Simracer weather conditions <input type="checkbox" x-model="event.simracerWeatherConditions"></label>
-                        <label class="check-row">Clima fixo na qualificação <input type="checkbox" x-model="event.isFixedConditionQualification"></label>
-                        <label class="field-block">MetaData <div class="field-control"><input type="text" x-model="event.metaData" placeholder="Texto opcional"><span class="value-pill" x-text="event.metaData || '—'"></span></div></label>
+                        <label class="field-block tooltip-label" data-tooltip="Uma mensagem ou metadados para identificar o evento, visível em alguns contextos do jogo.">Mensagem do evento (metaData) <div class="field-control compact"><input type="text" x-model="event.metaData" style="width: 100%;"></div></label>
                     </div>
                 </div>
                 <div class="sessions">
                     <h3>Sessões</h3>
-                    <div class="help-box compact">
-                        <strong>Você pode inserir ou remover sessões à vontade.</strong> Se não souber qual montar, use um preset pronto e depois ajuste as durações. O multiplicador muda a velocidade do tempo da sessão.
-                        <span class="tooltip" title="O multiplicador é o controle de velocidade do tempo. Um valor maior faz a sessão correr mais rápido.">?</span>
-                    </div>
-                    <div class="info-card">
-                        <strong>O que são stint e janela de pit?</strong>
-                        <p>Stint é o tempo contínuo que um piloto pode dirigir sem parar. Janela de pit é o período em que a parada nos boxes é permitida. Quando o valor fica em -1, isso normalmente significa que a regra está desligada.</p>
-                    </div>
                     <template x-for="(session, idx) in event.sessions" :key="idx">
                         <div class="session-card">
-                            <div class="field-block">
+                            <div class="field-block tooltip-label" data-tooltip="Tipo da sessão: Practice (P), Qualify (Q) ou Race (R).">
                                 <label>Tipo</label>
                                 <select x-model="session.sessionType">
                                     <option value="P">Practice</option>
@@ -208,9 +166,9 @@
                                     <option value="R">Race</option>
                                 </select>
                             </div>
-                            <div class="field-block"><label>Duração (min)</label><input type="number" x-model.number="session.sessionDurationMinutes"></div>
-                            <div class="field-block"><label>Hora</label><input type="number" min="0" max="23" x-model.number="session.hourOfDay"></div>
-                            <div class="field-block">
+                            <div class="field-block tooltip-label" data-tooltip="Duração da sessão em minutos."><label>Duração (min)</label><input type="number" x-model.number="session.sessionDurationMinutes"></div>
+                            <div class="field-block tooltip-label" data-tooltip="Hora de início da sessão (0-23)."><label>Hora</label><input type="number" min="0" max="23" x-model.number="session.hourOfDay"></div>
+                            <div class="field-block tooltip-label" data-tooltip="Dia do fim de semana da sessão: Sexta (1), Sábado (2) ou Domingo (3).">
                                 <label>Dia</label>
                                 <select x-model.number="session.dayOfWeekend">
                                     <option value="1">Sexta</option>
@@ -218,7 +176,7 @@
                                     <option value="3">Domingo</option>
                                 </select>
                             </div>
-                            <div class="field-block multiplier-field">
+                            <div class="field-block multiplier-field tooltip-label" data-tooltip="Multiplicador da passagem do tempo durante a sessão. '1x' é tempo real.">
                                 <label>Multiplicador</label>
                                 <div class="multiplier-control">
                                     <input type="number" min="1" max="24" x-model.number="session.timeMultiplier">
@@ -238,67 +196,78 @@
             <!-- Aba Rules -->
             <div x-show="activeTab=='rules'">
                 <h2>Regras do Evento</h2>
-                <!-- Campos de eventRules -->
-                <div class="form-group">
-                    <div class="info-card">
-                        <strong>Regras de pitstop</strong>
-                        <p>Essas opções controlam como a corrida funciona em relação a paradas nos boxes. Se você estiver começando, deixe os valores em 0 ou -1 para manter as regras mais simples.</p>
+                <div class="form-columns-wrapper">
+                    <!-- Coluna da Esquerda -->
+                    <div class="form-column">
+                        <label class="field-block tooltip-label" data-tooltip="Define o critério para a classificação: volta mais rápida (1) ou média das voltas (2).">Qualify standing type <div class="field-control"><select x-model.number="rules.qualifyStandingType"><option value="1">Volta mais rápida</option><option value="2">Média das voltas</option></select><span class="value-pill" x-text="rules.qualifyStandingType"></span></div></label>
+                        <label class="field-block tooltip-label" data-tooltip="Número de pit stops obrigatórios durante a corrida. 0 desativa a regra.">Pit stops obrigatórios <div class="field-control"><input type="number" x-model.number="rules.mandatoryPitstopCount"><span class="value-pill" x-text="rules.mandatoryPitstopCount"></span></div></label>
+                        <label class="field-block tooltip-label" data-tooltip="Duração da janela de pit stop em segundos. -1 desativa a janela.">Janela de pit (seg) <div class="field-control"><input type="number" x-model.number="rules.pitwindowLengthSec"><span class="value-pill" x-text="rules.pitwindowLengthSec"></span></div></label>
+                        <label class="field-block tooltip-label" data-tooltip="Tempo máximo que um piloto pode dirigir continuamente sem fazer uma parada (stint). -1 desativa.">Stint máximo (seg) <div class="field-control"><input type="number" x-model.number="rules.driverStintTimeSec"><span class="value-pill" x-text="rules.driverStintTimeSec"></span></div></label>
+                        <label class="field-block tooltip-label" data-tooltip="Tempo máximo total de condução para um único piloto em corridas de endurance. -1 desativa.">Tempo total de condução (seg) <div class="field-control"><input type="number" x-model.number="rules.maxTotalDrivingTime"><span class="value-pill" x-text="rules.maxTotalDrivingTime"></span></div></label>
+                        <label class="field-block tooltip-label" data-tooltip="Número máximo de pilotos em uma equipe para corridas com troca de piloto.">Máximo de pilotos <div class="field-control"><input type="number" min="1" max="100" x-model.number="rules.maxDriversCount"><span class="value-pill" x-text="rules.maxDriversCount"></span></div></label>
+                        <label class="field-block tooltip-label" data-tooltip="Número de sets de pneus disponíveis para todo o fim de semana do evento.">Sets de pneus <div class="field-control"><input type="number" min="1" max="100" x-model.number="rules.tyreSetCount"><span class="value-pill" x-text="rules.tyreSetCount"></span></div></label>
                     </div>
-                    <label class="field-block">Qualify standing type <div class="field-control"><select x-model.number="rules.qualifyStandingType"><option value="1">Volta mais rápida</option><option value="2">Média das voltas</option></select><span class="value-pill" x-text="rules.qualifyStandingType"></span></div></label>
-                    <label class="field-block">Pit stops obrigatórios <div class="field-control"><input type="number" x-model.number="rules.mandatoryPitstopCount"><span class="value-pill" x-text="rules.mandatoryPitstopCount"></span></div></label>
-                    <label class="field-block">Janela de pit (seg) <div class="field-control"><input type="number" x-model.number="rules.pitwindowLengthSec"><span class="value-pill" x-text="rules.pitwindowLengthSec"></span></div></label>
-                    <label class="field-block">Stint máximo (seg) <div class="field-control"><input type="number" x-model.number="rules.driverStintTimeSec"><span class="value-pill" x-text="rules.driverStintTimeSec"></span></div></label>
-                    <label class="field-block">Tempo total de condução (seg) <div class="field-control"><input type="number" x-model.number="rules.maxTotalDrivingTime"><span class="value-pill" x-text="rules.maxTotalDrivingTime"></span></div></label>
-                    <label class="field-block">Máximo de pilotos <div class="field-control"><input type="number" min="1" max="100" x-model.number="rules.maxDriversCount"><span class="value-pill" x-text="rules.maxDriversCount"></span></div></label>
-                    <label class="field-block">Sets de pneus <div class="field-control"><input type="number" min="1" max="100" x-model.number="rules.tyreSetCount"><span class="value-pill" x-text="rules.tyreSetCount"></span></div></label>
-                    <label>Abastecimento permitido <input type="checkbox" x-model="rules.isRefuellingAllowedInRace"></label>
-                    <label>Reabastecimento com tempo fixo <input type="checkbox" x-model="rules.isRefuellingTimeFixed"></label>
-                    <label>Pitstop obrigatório com reabastecimento <input type="checkbox" x-model="rules.isMandatoryPitstopRefuellingRequired"></label>
-                    <label>Pitstop obrigatório com troca de pneu <input type="checkbox" x-model="rules.isMandatoryPitstopTypeChangeRequired"></label>
-                    <label>Pitstop obrigatório com troca de piloto <input type="checkbox" x-model="rules.isMandatoryPitstopSwapDriverRequired"></label>
-                    <div class="action-row">
-                        <button @click="save('eventRules.json', rules)">Salvar Regras</button>
-                        <button @click="load('eventRules.json')">Recarregar</button>
+                    <!-- Coluna da Direita -->
+                    <div class="form-column">
+                        <label class="tooltip-label" data-tooltip="Permite ou proíbe o reabastecimento durante a corrida.">Abastecimento permitido <input type="checkbox" x-model="rules.isRefuellingAllowedInRace"></label>
+                        <label class="tooltip-label" data-tooltip="Se ativado, todo reabastecimento levará a mesma quantidade de tempo, independente da quantidade de combustível.">Reabastecimento com tempo fixo <input type="checkbox" x-model="rules.isRefuellingTimeFixed"></label>
+                        <label class="tooltip-label" data-tooltip="Define se o reabastecimento é obrigatório durante o pit stop mandatório.">Pitstop obrigatório com reabastecimento <input type="checkbox" x-model="rules.isMandatoryPitstopRefuellingRequired"></label>
+                        <label class="tooltip-label" data-tooltip="Define se a troca de pneus é obrigatória durante o pit stop mandatório.">Pitstop obrigatório com troca de pneu <input type="checkbox" x-model="rules.isMandatoryPitstopTypeChangeRequired"></label>
+                        <label class="tooltip-label" data-tooltip="Define se a troca de piloto é obrigatória durante o pit stop mandatório.">Pitstop obrigatório com troca de piloto <input type="checkbox" x-model="rules.isMandatoryPitstopSwapDriverRequired"></label>
                     </div>
+                </div>
+                <div class="action-row" style="justify-content: flex-start; margin-top: 20px;">
+                    <button @click="save('eventRules.json', rules)">Salvar Regras</button>
+                    <button @click="load('eventRules.json')">Recarregar</button>
                 </div>
             </div>
             <!-- Aba Admin -->
             <div x-show="activeTab=='admin'">
                 <h2>Comandos de Administrador</h2>
-                <div class="help-box">
-                    <strong>Uso no jogo:</strong> no chat do jogo, use o comando /admin e a senha admin para acessar os comandos abaixo.
+                <div class="info-card wide">
+                    Para usar, entre no servidor, abra o chat (normalmente com a tecla 'Enter'), digite <code>/admin &lt;sua_senha_admin&gt;</code> e então use os comandos abaixo.
                 </div>
                 <div class="admin-grid">
                     <div class="advanced-card">
-                        <h3>Controle de sessão</h3>
+                        <h3>Controle de Sessão</h3>
                         <ul class="admin-list">
-                            <li><code>/next</code> — pula a sessão atual</li>
-                            <li><code>/restart</code> — reinicia a sessão atual</li>
+                            <li><code>/next</code> — Pula para a próxima sessão.</li>
+                            <li><code>/restart</code> — Reinicia a sessão atual.</li>
+                            <li><code>/manual entrylist</code> — Cria um entrylist.json com os pilotos conectados.</li>
                         </ul>
                     </div>
                     <div class="advanced-card">
-                        <h3>Punições e ações rápidas</h3>
+                        <h3>Punições</h3>
                         <ul class="admin-list">
-                            <li><code>/kick &lt;número&gt;</code> — expulsa o piloto</li>
-                            <li><code>/ban &lt;número&gt;</code> — bane até reiniciar o servidor</li>
-                            <li><code>/dq &lt;número&gt;</code> — desqualifica imediatamente</li>
-                            <li><code>/clear &lt;número&gt;</code> e <code>/clear_all</code> — limpam penalidades</li>
-                            <li><code>/tp5</code>, <code>/tp15</code>, <code>/dt</code>, <code>/sg10</code>, <code>/sg20</code>, <code>/sg30</code></li>
+                            <li><code>/kick &lt;núm do carro&gt;</code> — Expulsa o piloto do servidor.</li>
+                            <li><code>/ban &lt;núm do carro&gt;</code> — Bane o piloto até o servidor reiniciar.</li>
+                            <li><code>/dq &lt;núm do carro&gt;</code> — Desqualifica o carro.</li>
+                            <li><code>/clear &lt;núm do carro&gt;</code> — Remove penalidades pendentes do carro.</li>
+                            <li><code>/clear_all</code> — Remove todas as penalidades de todos os carros.</li>
+                            <li style="margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border);"><code>/tp5 &lt;núm do carro&gt;</code> — Adiciona 5s de penalidade.</li>
+                            <li><code>/tp15 &lt;núm do carro&gt;</code> — Adiciona 15s de penalidade.</li>
+                            <li><code>/dt &lt;núm do carro&gt;</code> — Aplica um Drive-Through.</li>
+                            <li><code>/sg10 &lt;núm do carro&gt;</code> — Aplica um Stop&Go de 10s.</li>
+                            <li><code>/sg20 &lt;núm do carro&gt;</code> — Aplica um Stop&Go de 20s.</li>
+                            <li><code>/sg30 &lt;núm do carro&gt;</code> — Aplica um Stop&Go de 30s.</li>
+                            <li style="margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border);"><code>/tp5c &lt;núm do carro&gt;</code> — Adiciona 5s (causar colisão).</li>
+                            <li><code>/tp15c &lt;núm do carro&gt;</code> — Adiciona 15s (causar colisão).</li>
+                            <li><code>/dtc &lt;núm do carro&gt;</code> — Aplica Drive-Through (causar colisão).</li>
                         </ul>
                     </div>
                     <div class="advanced-card">
-                        <h3>BoP em tempo real</h3>
+                        <h3>Debug e Status</h3>
                         <ul class="admin-list">
-                            <li><code>/ballast &lt;número&gt; &lt;kg&gt;</code></li>
-                            <li><code>/restrictor &lt;número&gt; &lt;%&gt;</code></li>
+                            <li><code>/debug formation</code> — Exibe status da volta de formação.</li>
+                            <li><code>/debug bandwidth</code> — Exibe o uso de banda do servidor.</li>
+                            <li><code>/debug qos</code> — Exibe a qualidade da conexão dos pilotos.</li>
                         </ul>
                     </div>
                     <div class="advanced-card">
-                        <h3>Ferramentas</h3>
+                        <h3>BoP em Tempo Real</h3>
                         <ul class="admin-list">
-                            <li><code>/manual entrylist</code> — gera entry list com jogadores conectados</li>
-                            <li><code>/debug formation</code>, <code>/debug bandwidth</code>, <code>/debug qos</code></li>
-                            <li><code>&swap &lt;driver_number&gt;</code> — troca de piloto em equipe</li>
+                            <li><code>/ballast &lt;núm do carro&gt; &lt;kg&gt;</code> — Adiciona lastro ao carro (0-100kg).</li>
+                            <li><code>/restrictor &lt;núm do carro&gt; &lt;%&gt;</code> — Adiciona restritor de potência (0-20%).</li>
                         </ul>
                     </div>
                 </div>
@@ -306,68 +275,60 @@
             <!-- Aba Avançado (entrylist, assistRules, bop) -->
             <div x-show="activeTab=='advanced'">
                 <h2>Avançado</h2>
-                <div class="help-box">
-                        <strong>Próximo passo:</strong> aqui você pode organizar entrada de pilotos, assistência e BoP para eventos privados ou mais controlados.
-                    <span class="tooltip" title="Essas áreas ainda estão sendo preparadas para um fluxo mais guiado e seguro.">?</span>
-                </div>
-                <div class="privacy-card">
-                    <h3>⚠️ Aviso e privacidade</h3>
-                    <p>O servidor deve estar parado antes de editar os arquivos, salvo exceções. Use senhas fortes para eventos privados e evite compartilhar dados sensíveis.</p>
-                    <p>Este protótipo não armazena dados pessoais fora da sua máquina, mas recomenda-se manter backups dos arquivos JSON antes de testar mudanças.</p>
-                </div>
-                <div class="advanced-grid">
-                    <div class="advanced-card">
-                        <h3>Lista de pilotos</h3>
-                        <p>Adicione pilotos, SteamID e equipe para montar uma entry list simples.</p>
-                        <template x-for="(entry, idx) in entrylist.entries" :key="idx">
-                            <div class="entry-row">
-                                <input type="text" x-model="entry.name" placeholder="Nome">
-                                <input type="text" x-model="entry.playerID" placeholder="SteamID">
-                                <input type="text" x-model="entry.team" placeholder="Equipe">
-                                <label class="inline-check"><input type="checkbox" x-model="entry.isAdmin"> Admin</label>
-                                <button @click="removeEntryListEntry(idx)" class="btn-remove">✕</button>
+                <div class="advanced-columns-wrapper">
+                    <div class="advanced-column">
+                        <div class="advanced-card">
+                            <h3>Regras de assistência</h3>
+                            <label class="tooltip-label" data-tooltip="Define o nível máximo de Controle de Tração permitido.">Controle de tração <input type="checkbox" x-model="assistRules.tractionControl"></label>
+                            <label class="tooltip-label" data-tooltip="Permite ou proíbe o uso de ABS.">ABS <input type="checkbox" x-model="assistRules.abs"></label>
+                            <label class="tooltip-label" data-tooltip="Permite ou proíbe o uso de Controle de Estabilidade.">Controle de estabilidade <input type="checkbox" x-model="assistRules.stabilityControl"></label>
+                            <label class="tooltip-label" data-tooltip="Permite ou proíbe o uso de embreagem automática.">Auto clutch <input type="checkbox" x-model="assistRules.autoClutch"></label>
+                            <label class="tooltip-label" data-tooltip="Permite ou proíbe o uso do auto-blip (punta-taco automático).">Auto blip <input type="checkbox" x-model="assistRules.autoBlip"></label>
+                            <label class="tooltip-label" data-tooltip="Permite ou proíbe o uso de câmbio automático.">Auto shift <input type="checkbox" x-model="assistRules.autoShift"></label>
+                            <label class="tooltip-label" data-tooltip="Mostra ou esconde a linha de traçado ideal na pista.">Ideal line <input type="checkbox" x-model="assistRules.idealLine"></label>
+                            <label class="tooltip-label" data-tooltip="Desativa o acendimento automático dos faróis.">Desativar luzes automáticas <input type="checkbox" x-model="assistRules.disableAutoLights"></label>
+                            <label class="tooltip-label" data-tooltip="Desativa o acionamento automático dos limpadores de para-brisa.">Desativar limpadores automáticos <input type="checkbox" x-model="assistRules.disableAutoWiper"></label>
+                            <label class="tooltip-label" data-tooltip="Desativa a partida automática do motor.">Desativar partida automática do motor <input type="checkbox" x-model="assistRules.disableAutoEngineStart"></label>
+                            <label class="tooltip-label" data-tooltip="Desativa o limitador de velocidade automático nos boxes.">Desativar limitador automático de boxes <input type="checkbox" x-model="assistRules.disableAutoPitLimiter"></label>
+                            <div class="action-row">
+                                <button @click="save('assistRules.json', assistRules)">Salvar assists</button>
+                                <button @click="load('assistRules.json')">Recarregar</button>
                             </div>
-                        </template>
-                        <button @click="addEntryListEntry()" class="btn-add">+ Adicionar piloto</button>
-                        <div class="action-row">
-                            <button @click="save('entrylist.json', entrylist)">Salvar entry list</button>
-                            <button @click="load('entrylist.json')">Recarregar</button>
                         </div>
                     </div>
-                    <div class="advanced-card">
-                        <h3>Regras de assistência</h3>
-                        <p>Ative ou desative recursos de ajuda para deixar a experiência mais acessível.</p>
-                        <label>Controle de tração <input type="checkbox" x-model="assistRules.tractionControl"></label>
-                        <label>ABS <input type="checkbox" x-model="assistRules.abs"></label>
-                        <label>Controle de estabilidade <input type="checkbox" x-model="assistRules.stabilityControl"></label>
-                        <label>Auto clutch <input type="checkbox" x-model="assistRules.autoClutch"></label>
-                        <label>Auto blip <input type="checkbox" x-model="assistRules.autoBlip"></label>
-                        <label>Auto shift <input type="checkbox" x-model="assistRules.autoShift"></label>
-                        <label>Ideal line <input type="checkbox" x-model="assistRules.idealLine"></label>
-                        <label>Desativar luzes automáticas <input type="checkbox" x-model="assistRules.disableAutoLights"></label>
-                        <label>Desativar limpadores automáticos <input type="checkbox" x-model="assistRules.disableAutoWiper"></label>
-                        <label>Desativar partida automática do motor <input type="checkbox" x-model="assistRules.disableAutoEngineStart"></label>
-                        <label>Desativar limitador automático de boxes <input type="checkbox" x-model="assistRules.disableAutoPitLimiter"></label>
-                        <div class="action-row">
-                            <button @click="save('assistRules.json', assistRules)">Salvar assists</button>
-                            <button @click="load('assistRules.json')">Recarregar</button>
-                        </div>
-                    </div>
-                    <div class="advanced-card">
-                        <h3>Balance of Performance</h3>
-                        <p>Use essa área para ajustar valores de BoP de forma simples.</p>
-                        <template x-for="(item, idx) in bop.entries" :key="idx">
-                            <div class="bop-row">
-                                <input type="text" x-model="item.carClass" placeholder="Classe">
-                                <input type="number" x-model.number="item.powerAdjustment" placeholder="Power">
-                                <input type="number" x-model.number="item.weightAdjustment" placeholder="Weight">
-                                <button @click="removeBopEntry(idx)" class="btn-remove">✕</button>
+                    <div class="advanced-column">
+                        <div class="advanced-card">
+                            <h3>Lista de pilotos</h3>
+                            <template x-for="(entry, idx) in entrylist.entries" :key="idx">
+                                <div class="entry-row">
+                                    <input type="text" x-model="entry.name" placeholder="Nome">
+                                    <input type="text" x-model="entry.playerID" placeholder="SteamID">
+                                    <input type="text" x-model="entry.team" placeholder="Equipe">
+                                    <label class="inline-check"><input type="checkbox" x-model="entry.isAdmin"> Admin</label>
+                                    <button @click="removeEntryListEntry(idx)" class="btn-remove">✕</button>
+                                </div>
+                            </template>
+                            <button @click="addEntryListEntry()" class="btn-add">+ Adicionar piloto</button>
+                            <div class="action-row">
+                                <button @click="save('entrylist.json', entrylist)">Salvar entry list</button>
+                                <button @click="load('entrylist.json')">Recarregar</button>
                             </div>
-                        </template>
-                        <button @click="addBopEntry()" class="btn-add">+ Adicionar BoP</button>
-                        <div class="action-row">
-                            <button @click="save('bop.json', bop)">Salvar BoP</button>
-                            <button @click="load('bop.json')">Recarregar</button>
+                        </div>
+                        <div class="advanced-card">
+                            <h3>Balance of Performance</h3>
+                            <template x-for="(item, idx) in bop.entries" :key="idx">
+                                <div class="bop-row">
+                                    <input type="text" x-model="item.carClass" placeholder="Classe">
+                                    <input type="number" x-model.number="item.powerAdjustment" placeholder="Power">
+                                    <input type="number" x-model.number="item.weightAdjustment" placeholder="Weight">
+                                    <button @click="removeBopEntry(idx)" class="btn-remove">✕</button>
+                                </div>
+                            </template>
+                            <button @click="addBopEntry()" class="btn-add">+ Adicionar BoP</button>
+                            <div class="action-row">
+                                <button @click="save('bop.json', bop)">Salvar BoP</button>
+                                <button @click="load('bop.json')">Recarregar</button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -388,24 +349,28 @@
             <h3>Guia rápido para criar seu servidor</h3>
             <div class="guide-steps">
                 <div class="guide-step">
-                    <strong>1. Escolha a pista</strong>
-                    <p>Use a grade de pistas para selecionar a pista do evento. As imagens já aparecem se você tiver os arquivos PNG na pasta de imagens.</p>
+                    <strong>1. Rede e Servidor</strong>
+                    <p>Comece nas abas "Rede" e "Servidor" para definir o nome, senhas e configurações de conexão. Use os requisitos de SA e RC para controlar o acesso.</p>
                 </div>
                 <div class="guide-step">
-                    <strong>2. Ajuste o básico</strong>
-                    <p>Na aba Rede, defina as portas e deixe LAN Discovery ativado para facilitar a conexão local. Para LAN, Hamachi ou Radmin ajudam bastante.</p>
+                    <strong>2. Pista e Sessões</strong>
+                    <p>Na aba "Evento", escolha a pista e use um modelo de sessões ou crie as suas (Treino, Qualy, Corrida). Ajuste o clima como desejar.</p>
                 </div>
                 <div class="guide-step">
-                    <strong>3. Defina o servidor</strong>
-                    <p>Na aba Servidor, escreva o nome, as senhas e use os filtros de SA, Racecraft e pontuação geral se quiser limitar a entrada de pilotos.</p>
+                    <strong>3. Regras do Jogo</strong>
+                    <p>Vá para a aba "Regras" para configurar pit stops obrigatórios, uso de pneus e outras regras de competição.</p>
                 </div>
                 <div class="guide-step">
-                    <strong>4. Monte o evento</strong>
-                    <p>Use um preset pronto ou crie sessões manualmente. Você pode adicionar ou remover sessões à vontade.</p>
+                    <strong>4. Configurações Avançadas</strong>
+                    <p>Na aba "Avançado", você pode forçar assistências, definir lastro (BoP) para carros ou criar uma lista de pilotos permitidos (entrylist).</p>
                 </div>
                 <div class="guide-step">
-                    <strong>5. Salve e use</strong>
-                    <p>Use “Salvar”, “Salvar e iniciar”, “Salvar Preset” e “Carregar Preset” para organizar seus eventos. O atalho cria um .bat na área de trabalho ou em outra pasta que você escolher.</p>
+                    <strong>5. Salve e Inicie</strong>
+                    <p>Use os botões "Salvar" para guardar suas configurações em arquivos. "Salvar Preset" salva o conjunto completo. Quando estiver pronto, clique em "START SERVER".</p>
+                </div>
+                <div class="guide-step">
+                    <strong>6. Administração</strong>
+                    <p>A aba "Admin" lista os comandos para gerenciar o servidor enquanto ele está no ar (ex: <code>/next</code> para pular a sessão).</p>
                 </div>
             </div>
             <div class="guide-actions">
