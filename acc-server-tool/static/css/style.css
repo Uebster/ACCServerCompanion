@@ -95,12 +95,18 @@ input[type="checkbox"] { width: 20px; height: 20px; accent-color: var(--accent);
 .multiplier-control { display: flex; align-items: center; gap: 8px; }
 .multiplier-control input { width: 70px; }
 .advanced-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 16px; box-shadow: var(--shadow); }
+.advanced-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; margin-top: 16px; align-items: start; }
 .advanced-card h3 { color: var(--accent-strong); margin-bottom: 8px; }
 .advanced-card p { color: var(--muted); margin-bottom: 12px; line-height: 1.45; }
+.advanced-card .action-row { margin-top: 16px; }
+.advanced-card label {
+    /* Garante que os checkboxes em 'Regras de assistência' fiquem alinhados */
+    justify-content: space-between;
+}
 .entry-row, .bop-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 8px; align-items: center; margin-bottom: 8px; }
 .entry-row input[type="text"], .entry-row input[type="number"], .bop-row input[type="text"], .bop-row input[type="number"] { width: 100%; }
 .inline-check { display: flex; align-items: center; gap: 8px; justify-content: flex-start; }
-.admin-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-top: 16px; }
+.admin-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-top: 16px; }
 .admin-list { list-style: none; display: grid; gap: 8px; padding: 0; margin: 0; }
 .admin-list li { color: var(--muted); line-height: 1.45; }
 .admin-list code { color: var(--accent-strong); font-family: Consolas, monospace; }
