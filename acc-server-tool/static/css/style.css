@@ -47,7 +47,7 @@ body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', Tahom
 .btn-shortcut:hover, .btn-preset:hover, .theme-toggle:hover { background: var(--soft); border-color: var(--accent); }
 .content { flex:1; padding: 30px; overflow-y: auto; background: linear-gradient(180deg, rgba(96,165,250,0.04), transparent 25%); }
 h2 { color: var(--accent-strong); border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-bottom: 20px; }
-.form-group { display: flex; flex-direction: column; gap: 15px; max-width: 600px; }
+.form-group { display: flex; flex-direction: column; gap: 15px; }
 label { display: flex; justify-content: space-between; align-items: center; gap: 20px; }
 .field-block { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
 .field-control { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
@@ -77,7 +77,7 @@ input[type="checkbox"] { width: 20px; height: 20px; accent-color: var(--accent);
 .template-bar { display: flex; gap: 12px; align-items: center; margin-bottom: 16px; }
 .action-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
 .privacy-card { background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.25); border-radius: 10px; padding: 14px; margin: 16px 0; color: var(--muted); }
-.info-card { background: var(--soft); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; margin-bottom: 12px; color: var(--muted); }
+.info-card { background: var(--soft); border: 1px solid var(--border); border-radius: 10px; padding: 12px 40px; margin-bottom: 12px; color: var(--muted); }
 .info-card.wide { margin-bottom: 16px; }
 .info-card ul { margin: 8px 0 0 18px; display: grid; gap: 6px; }
 .template-bar select { width: auto; min-width: 220px; }

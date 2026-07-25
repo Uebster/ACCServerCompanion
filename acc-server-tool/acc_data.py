@@ -86,10 +86,10 @@ DEFAULT_CONFIG = {
         "configVersion": 1
     },
     "settings.json": {
-        "serverName": "Meu Servidor ACC",
+        "serverName": "Nome do Servidor",
         "password": "",
         "spectatorPassword": "",
-        "adminPassword": "admin123",
+        "adminPassword": "",
         "carGroup": "GT3",
         "trackMedalsRequirement": 0,
         "safetyRatingRequirement": 1,
