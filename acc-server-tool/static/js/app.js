@@ -1,9 +1,10 @@
 // static/js/app.js
 function accApp() {
     return {
-        activeTab: 'network',
+        activeTab: 'setup',
         showGuide: false,
         theme: localStorage.getItem('acc-theme') || 'dark',
+        server_dir_info: {},
         tracks: window.ACC_INITIAL_DATA?.tracks || {},
         carGroups: window.ACC_INITIAL_DATA?.carGroups || [],
         sessionPresets: window.ACC_INITIAL_DATA?.sessionPresets || {},
@@ -75,14 +76,25 @@ function accApp() {
                         this.entrylist = data && data.entries ? data : { entries: [] };
                     } else if (filename === 'assistRules.json') {
                         this.assistRules = data && Object.keys(data).length ? data : {
-                            tractionControl: true,
-                            abs: true,
-                            stabilityControl: true,
-                            autoClutch: false,
-                            autoBlip: false,
-                            autoShift: false,
-                            idealLine: false
+                            stabilityControlLevelMax: 100,
+                            tractionControl: -1,
+                            abs: -1,
+                            autoClutch: 0,
+                            autoBlip: 0,
+                            autoShift: 0,
+                            idealLine: 0,
+                            disableAutoLights: 0,
+                            disableAutoWiper: 0,
+                            disableAutoEngineStart: 0,
+                            disableAutoPitLimiter: 0
                         };
+                        // Garantir que a propriedade nova exista e remover a antiga
+                        if (!('stabilityControlLevelMax' in this.assistRules)) {
+                            this.assistRules.stabilityControlLevelMax = 100;
+                        }
+                        if ('stabilityControl' in this.assistRules) {
+                            delete this.assistRules.stabilityControl;
+                        }
                     } else if (filename === 'bop.json') {
                         this.bop = data && data.entries ? data : { entries: [] };
                     }
@@ -92,9 +104,7 @@ function accApp() {
             fetch('/api/server-info')
                 .then(r => r.json())
                 .then(data => {
-                    if (!data.server_exe_exists) {
-                        alert('⚠️ Pasta do servidor não encontrada ou accServer.exe não foi localizado. Use “Escolher pasta do servidor” para apontar o diretório correto.');
-                    }
+                    this.server_dir_info = data;
                 });
         },
         applyTheme() {
@@ -116,10 +126,17 @@ function accApp() {
             this.showGuide = false;
         },
         pickServerDir() {
-            const path = prompt('Cole o caminho completo da pasta do servidor ACC (aquela que contém accServer.exe e a subpasta cfg):');
-            if (!path) return;
-            alert('⚠️ Para este protótipo, o caminho precisa ser definido via variável de ambiente ACC_SERVER_DIR. O app foi preparado para isso.');
-            alert('Exemplo no Windows: set ACC_SERVER_DIR=C:\\Steam\\steamapps\\common\\Assetto Corsa Competizione\\server');
+            fetch('/api/pick_server_dir', { method: 'POST' })
+                .then(r => r.json())
+                .then(res => {
+                    alert(res.status || res.error);
+                    if (res.path) {
+                        // Recarrega informações para refletir a mudança
+                        this.loadServerInfo();
+                        // O ideal seria forçar um recarregamento da página ou de todos os dados
+                        window.location.reload();
+                    }
+                });
         },
         applySessionTemplate() {
             if (!this.sessionTemplate) return;
@@ -209,14 +226,9 @@ function accApp() {
                 .then(res => alert(res.status || res.error));
         },
         createShortcut() {
-            const targetFolder = prompt('Onde você quer salvar o atalho? Deixe em branco para usar a área de trabalho.\nExemplo: C:\\Users\\SeuNome\\Documents\\ACC');
-            fetch('/api/create_shortcut', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ targetFolder: targetFolder || '' })
-            })
-            .then(r => r.json())
-            .then(res => alert(res.status || res.error));
+            fetch('/api/create_shortcut_dialog', { method: 'POST' })
+                .then(r => r.json())
+                .then(res => alert(res.status || res.error));
         },
         savePreset() {
             const name = prompt('Nome do preset:');

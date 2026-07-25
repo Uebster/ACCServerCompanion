@@ -77,8 +77,8 @@ def build_session_plan(preset_key: str):
 # Configurações padrão para arquivos
 DEFAULT_CONFIG = {
     "configuration.json": {
-        "udpPort": 9201,
-        "tcpPort": 9201,
+        "udpPort": 9231,
+        "tcpPort": 9232,
         "maxConnections": 30,
         "lanDiscovery": 1,
         "registerToLobby": 1,
@@ -162,17 +162,17 @@ DEFAULT_CONFIG = {
         "entries": []
     },
     "assistRules.json": {
-        "tractionControl": True,
-        "abs": True,
-        "stabilityControl": True,
-        "autoClutch": False,
-        "autoBlip": False,
-        "autoShift": False,
-        "idealLine": False,
-        "disableAutoLights": False,
-        "disableAutoWiper": False,
-        "disableAutoEngineStart": False,
-        "disableAutoPitLimiter": False
+        "stabilityControlLevelMax": 100,
+        "tractionControl": -1,
+        "abs": -1,
+        "autoClutch": 0,
+        "autoBlip": 0,
+        "autoShift": 0,
+        "idealLine": 0,
+        "disableAutoLights": 0,
+        "disableAutoWiper": 0,
+        "disableAutoEngineStart": 0,
+        "disableAutoPitLimiter": 0
     },
     "bop.json": {
         "entries": [

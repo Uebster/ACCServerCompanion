@@ -11,10 +11,18 @@ import threading
 import webbrowser
 import requests
 from flask import Flask, render_template, request, jsonify, send_from_directory
+
 from acc_data import (
     TRACKS, CAR_GROUPS, SESSION_TYPES, SESSION_TYPES_REV, WEEKDAYS, DEFAULT_CONFIG,
     SESSION_PRESETS, SESSION_PRESET_LABELS, build_session_plan
 )
+
+# Importações para diálogos de arquivo
+try:
+    import tkinter as tk
+    from tkinter import filedialog
+except ImportError:
+    tk = None  # Marcar que o tkinter não está disponível
 
 if sys.version_info >= (3, 14):
     import pkgutil
@@ -31,10 +39,29 @@ else:
     base_path = os.path.dirname(os.path.abspath(__file__))
     app_path = base_path
 
+# --- Gerenciamento do Caminho do Servidor ---
+APP_CONFIG_FILE = os.path.join(app_path, 'app_config.json')
+
+def get_server_dir():
+    """Lê o caminho do servidor do JSON de configuração, com fallback para env var."""
+    if os.path.exists(APP_CONFIG_FILE):
+        with open(APP_CONFIG_FILE, 'r', encoding='utf-8') as f:
+            try:
+                config = json.load(f)
+                return config.get('server_dir')
+            except json.JSONDecodeError:
+                pass  # Ignora arquivo corrompido
+    return os.environ.get('ACC_SERVER_DIR', os.path.join(app_path, 'server_dir'))
+
+def save_server_dir(path):
+    """Salva o caminho do servidor no JSON de configuração."""
+    with open(APP_CONFIG_FILE, 'w', encoding='utf-8') as f:
+        json.dump({'server_dir': path}, f, indent=2)
+
 app = Flask(__name__, static_folder=os.path.join(base_path, 'static'), template_folder=os.path.join(base_path, 'templates'))
 
 # Configuração do diretório do servidor (pode ser definido via env ou fixo)
-SERVER_DIR = os.environ.get('ACC_SERVER_DIR', os.path.join(app_path, 'server_dir'))
+SERVER_DIR = get_server_dir()
 CFG_DIR = os.path.join(SERVER_DIR, 'cfg')
 PRESET_DIR = os.path.join(app_path, 'presets')
 SESSION_TEMPLATES = SESSION_PRESETS
@@ -219,6 +246,78 @@ pause > nul
     with open(bat_path, 'w', encoding='utf-8') as f:
         f.write(bat_content)
     return jsonify({'status': f'Atalho criado em: {bat_path}'})
+
+@app.route('/api/pick_server_dir', methods=['POST'])
+def pick_server_dir():
+    """Abre um diálogo para escolher a pasta do servidor."""
+    if not tk:
+        return jsonify({'error': 'Tkinter não está instalado. Seleção de pasta indisponível.'}), 500
+
+    root = tk.Tk()
+    root.withdraw()
+    root.attributes("-topmost", True)
+    
+    dir_path = filedialog.askdirectory(title='Selecione a pasta raíz do seu ACC Dedicated Server')
+    root.destroy()
+
+    if not dir_path:
+        return jsonify({'status': 'Nenhuma pasta selecionada.'})
+
+    # Validação
+    server_exe_path = os.path.join(dir_path, 'accServer.exe')
+    server_subfolder_exe_path = os.path.join(dir_path, 'server', 'accServer.exe')
+
+    final_path = None
+    if os.path.exists(server_exe_path):
+        final_path = dir_path
+    elif os.path.exists(server_subfolder_exe_path):
+        final_path = os.path.join(dir_path, 'server')
+    
+    if not final_path:
+        return jsonify({'error': f'O arquivo "accServer.exe" não foi encontrado na pasta selecionada nem em sua subpasta "server": {dir_path}'}), 400
+
+    save_server_dir(final_path)
+    # Atualiza a variável global para refletir a mudança imediatamente
+    global SERVER_DIR, CFG_DIR
+    SERVER_DIR = final_path
+    CFG_DIR = os.path.join(SERVER_DIR, 'cfg')
+    os.makedirs(CFG_DIR, exist_ok=True)
+    
+    return jsonify({'status': f'Pasta do servidor atualizada com sucesso! O caminho foi ajustado para: {final_path}', 'path': final_path})
+
+@app.route('/api/create_shortcut_dialog', methods=['POST'])
+def create_shortcut_dialog():
+    """Abre um diálogo para escolher onde salvar o atalho."""
+    if not tk:
+        return jsonify({'error': 'Tkinter não está instalado. Criação de atalho indisponível.'}), 500
+
+    root = tk.Tk()
+    root.withdraw()
+    root.attributes("-topmost", True)
+
+    file_path = filedialog.asksaveasfilename(
+        title='Salvar atalho do servidor como...',
+        defaultextension=".bat",
+        initialfile='ACC_Server_Launcher.bat',
+        filetypes=[("Batch files", "*.bat"), ("All files", "*.*")]
+    )
+    root.destroy()
+    
+    if not file_path:
+        return jsonify({'status': 'Criação de atalho cancelada.'})
+
+    # Usa o SERVER_DIR atualizado
+    bat_content = f"""@echo off
+cd /d \"{SERVER_DIR}\"
+echo Iniciando servidor ACC...
+start accServer.exe
+echo Servidor iniciado. Pressione qualquer tecla para fechar...
+pause > nul
+"""
+    with open(file_path, 'w', encoding='utf-8') as f:
+        f.write(bat_content)
+        
+    return jsonify({'status': f'Atalho criado em: {file_path}'})
 
 # ================== PRESETS ==================
 
