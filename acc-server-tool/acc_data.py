@@ -47,6 +47,33 @@ SESSION_TYPES_REV = {v: k for k, v in SESSION_TYPES.items()}
 WEEKDAYS = {1: "Sexta", 2: "Sábado", 3: "Domingo"}
 WEEKDAYS_REV = {v: k for k, v in WEEKDAYS.items()}
 
+# Presets de sessões prontos para facilitar a vida do usuário
+SESSION_PRESET_LABELS = {
+    "practice_qualify_race": "Treino, Classificação e Corrida",
+    "race_only": "Apenas Corrida",
+    "practice_only": "Apenas Treino",
+}
+
+SESSION_PRESETS = {
+    "practice_qualify_race": [
+        {"sessionType": "P", "sessionDurationMinutes": 120, "hourOfDay": 10, "dayOfWeekend": 1, "timeMultiplier": 1},
+        {"sessionType": "Q", "sessionDurationMinutes": 10, "hourOfDay": 13, "dayOfWeekend": 1, "timeMultiplier": 1},
+        {"sessionType": "R", "sessionDurationMinutes": 20, "hourOfDay": 15, "dayOfWeekend": 1, "timeMultiplier": 1},
+    ],
+    "race_only": [
+        {"sessionType": "R", "sessionDurationMinutes": 20, "hourOfDay": 15, "dayOfWeekend": 1, "timeMultiplier": 1},
+    ],
+    "practice_only": [
+        {"sessionType": "P", "sessionDurationMinutes": 60, "hourOfDay": 10, "dayOfWeekend": 1, "timeMultiplier": 1},
+    ],
+}
+
+
+def build_session_plan(preset_key: str):
+    preset = SESSION_PRESETS.get(preset_key, [])
+    return [dict(session) for session in preset]
+
+
 # Configurações padrão para arquivos
 DEFAULT_CONFIG = {
     "configuration.json": {
@@ -55,32 +82,42 @@ DEFAULT_CONFIG = {
         "maxConnections": 30,
         "lanDiscovery": 1,
         "registerToLobby": 1,
+        "publicIP": "",
         "configVersion": 1
     },
     "settings.json": {
         "serverName": "Meu Servidor ACC",
         "password": "",
+        "spectatorPassword": "",
         "adminPassword": "admin123",
         "carGroup": "GT3",
         "trackMedalsRequirement": 0,
-        "safetyRatingRequirement": 0,
+        "safetyRatingRequirement": 1,
+        "minimumRacecraft": 1,
         "isRaceLocked": 0,
         "randomizeTrackWhenEmpty": 0,
         "allowAutoDQ": 1,
         "shortFormationLap": 1,
         "dumpEntryList": 0,
+        "dumpLeaderboards": 0,
         "formationLapType": 3,
         "ignorePrematureDisconnects": 1,
+        "centralEntryListPath": "",
         "configVersion": 1
     },
     "event.json": {
         "track": "monza",
         "preRaceWaitingTimeSeconds": 60,
         "sessionOverTimeSeconds": 120,
+        "postQualySeconds": 30,
+        "postRaceSeconds": 30,
         "ambientTemp": 26,
         "cloudLevel": 0.3,
         "rain": 0.0,
         "weatherRandomness": 3,
+        "simracerWeatherConditions": False,
+        "isFixedConditionQualification": False,
+        "metaData": "",
         "configVersion": 1,
         "sessions": [
             {
@@ -120,5 +157,26 @@ DEFAULT_CONFIG = {
         "isMandatoryPitstopSwapDriverRequired": False,
         "tyreSetCount": 50,
         "configVersion": 1
+    },
+    "entrylist.json": {
+        "entries": []
+    },
+    "assistRules.json": {
+        "tractionControl": True,
+        "abs": True,
+        "stabilityControl": True,
+        "autoClutch": False,
+        "autoBlip": False,
+        "autoShift": False,
+        "idealLine": False,
+        "disableAutoLights": False,
+        "disableAutoWiper": False,
+        "disableAutoEngineStart": False,
+        "disableAutoPitLimiter": False
+    },
+    "bop.json": {
+        "entries": [
+            {"carClass": "GT3", "powerAdjustment": 0, "weightAdjustment": 0}
+        ]
     }
 }

@@ -6,16 +6,38 @@ import codecs
 import shutil
 import datetime
 import subprocess
+import sys
+import threading
+import webbrowser
 import requests
 from flask import Flask, render_template, request, jsonify, send_from_directory
-from acc_data import TRACKS, CAR_GROUPS, SESSION_TYPES, SESSION_TYPES_REV, WEEKDAYS, DEFAULT_CONFIG
+from acc_data import (
+    TRACKS, CAR_GROUPS, SESSION_TYPES, SESSION_TYPES_REV, WEEKDAYS, DEFAULT_CONFIG,
+    SESSION_PRESETS, SESSION_PRESET_LABELS, build_session_plan
+)
 
-app = Flask(__name__)
+if sys.version_info >= (3, 14):
+    import pkgutil
+    if not hasattr(pkgutil, 'get_loader'):
+        pkgutil.get_loader = lambda name: None
+
+# Determina o caminho base, seja em modo de desenvolvimento ou empacotado com PyInstaller
+if getattr(sys, 'frozen', False):
+    # Rodando em um bundle PyInstaller
+    base_path = sys._MEIPASS
+    app_path = os.path.dirname(sys.executable) # Pasta do .exe
+else:
+    # Rodando em um ambiente de desenvolvimento normal
+    base_path = os.path.dirname(os.path.abspath(__file__))
+    app_path = base_path
+
+app = Flask(__name__, static_folder=os.path.join(base_path, 'static'), template_folder=os.path.join(base_path, 'templates'))
 
 # Configuração do diretório do servidor (pode ser definido via env ou fixo)
-SERVER_DIR = os.environ.get('ACC_SERVER_DIR', './server_dir')
+SERVER_DIR = os.environ.get('ACC_SERVER_DIR', os.path.join(app_path, 'server_dir'))
 CFG_DIR = os.path.join(SERVER_DIR, 'cfg')
-PRESET_DIR = './presets'
+PRESET_DIR = os.path.join(app_path, 'presets')
+SESSION_TEMPLATES = SESSION_PRESETS
 
 # Cria diretórios necessários
 os.makedirs(CFG_DIR, exist_ok=True)
@@ -61,7 +83,9 @@ def index():
                            tracks=TRACKS, 
                            car_groups=CAR_GROUPS,
                            session_types=SESSION_TYPES,
-                           weekdays=WEEKDAYS)
+                           weekdays=WEEKDAYS,
+                           session_presets=SESSION_PRESETS,
+                           session_preset_labels=SESSION_PRESET_LABELS)
 
 @app.route('/api/config/<filename>', methods=['GET'])
 def get_config(filename):
@@ -104,32 +128,62 @@ def post_config(filename):
 
 @app.route('/api/tracks/images/<track_name>')
 def track_image(track_name):
-    """Serve imagem da pista (baixa se não existir)"""
+    """Serve imagem da pista, tentando PNG/JPG/SVG e usando um placeholder local ao final."""
     img_folder = os.path.join(app.static_folder, 'images/tracks')
-    img_path = os.path.join(img_folder, f"{track_name}.jpg")
-    
-    if not os.path.exists(img_path):
-        # Tenta baixar de uma fonte (substitua pela URL real das imagens)
-        url = f"https://www.assettocorsa.net/acc/wp-content/uploads/tracks/{track_name}.jpg"
-        try:
-            r = requests.get(url, timeout=5)
-            if r.status_code == 200:
-                with open(img_path, 'wb') as f:
-                    f.write(r.content)
-            else:
-                # Placeholder (cria imagem vazia ou usa fallback)
-                # Vamos usar um placeholder: copiar uma imagem genérica se existir
-                fallback = os.path.join(img_folder, 'placeholder.jpg')
-                if os.path.exists(fallback):
-                    shutil.copy2(fallback, img_path)
-        except:
-            pass
-    
-    # Se ainda não existe, retorna 404
-    if not os.path.exists(img_path):
+    os.makedirs(img_folder, exist_ok=True)
+
+    candidates = [
+        f"{track_name}.png",
+        f"{track_name}.jpg",
+        f"{track_name}.jpeg",
+        f"{track_name}.svg",
+    ]
+
+    img_path = None
+    for candidate in candidates:
+        for base_dir in [img_folder, os.path.join(img_folder, 'manual')]:
+            full_path = os.path.join(base_dir, candidate)
+            if os.path.exists(full_path):
+                img_path = full_path
+                break
+        if img_path is not None:
+            break
+
+    if img_path is None:
+        fallback_path = os.path.join(img_folder, 'placeholder.svg')
+        if os.path.exists(fallback_path):
+            img_path = fallback_path
+
+    if img_path is None:
         return jsonify({'error': 'Imagem não encontrada'}), 404
-    
-    return send_from_directory(img_folder, f"{track_name}.jpg")
+
+    relative_path = os.path.relpath(img_path, img_folder)
+    return send_from_directory(img_folder, relative_path)
+
+@app.route('/api/server-info')
+def server_info():
+    """Retorna informações úteis sobre o diretório do servidor"""
+    server_exe = os.path.join(SERVER_DIR, 'accServer.exe')
+    cfg_exists = os.path.isdir(CFG_DIR)
+    return jsonify({
+        'server_dir': SERVER_DIR,
+        'cfg_dir': CFG_DIR,
+        'server_exe_exists': os.path.exists(server_exe),
+        'cfg_exists': cfg_exists,
+        'server_exe_path': server_exe,
+        'session_templates': SESSION_PRESETS,
+    })
+
+
+@app.route('/api/apply-session-template', methods=['POST'])
+def apply_session_template():
+    data = request.json or {}
+    preset_key = data.get('preset')
+    if not preset_key or preset_key not in SESSION_PRESETS:
+        return jsonify({'error': 'Preset inválido'}), 400
+    sessions = build_session_plan(preset_key)
+    return jsonify({'sessions': sessions})
+
 
 @app.route('/api/start_server', methods=['POST'])
 def start_server():
@@ -138,25 +192,30 @@ def start_server():
     if not os.path.exists(server_exe):
         return jsonify({'error': 'accServer.exe não encontrado em ' + SERVER_DIR}), 404
     try:
-        # Inicia em subprocess (detached)
-        subprocess.Popen([server_exe], cwd=SERVER_DIR, shell=True,
-                         creationflags=subprocess.DETACHED_PROCESS | subprocess.CREATE_NEW_PROCESS_GROUP)
+        # Prepara flags para garantir que o processo seja desvinculado e não crie uma janela de console
+        DETACHED_PROCESS = 0x00000008
+        CREATE_NO_WINDOW = 0x08000000
+        # Inicia o servidor em um subprocesso completamente novo e sem janela
+        subprocess.Popen([server_exe], cwd=SERVER_DIR, creationflags=DETACHED_PROCESS | CREATE_NO_WINDOW)
         return jsonify({'status': 'Servidor iniciado com sucesso!'})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/create_shortcut', methods=['POST'])
 def create_shortcut():
-    """Cria um atalho .bat na área de trabalho para iniciar o servidor"""
-    desktop = os.path.join(os.path.expanduser('~'), 'Desktop')
+    """Cria um atalho .bat na área de trabalho ou na pasta escolhida pelo usuário."""
+    data = request.get_json(silent=True) or {}
+    target_folder = (data.get('targetFolder') or '').strip()
+    save_dir = target_folder or os.path.join(os.path.expanduser('~'), 'Desktop')
+    os.makedirs(save_dir, exist_ok=True)
     bat_content = f"""@echo off
-cd /d "{SERVER_DIR}"
+cd /d \"{SERVER_DIR}\"
 echo Iniciando servidor ACC...
 start accServer.exe
 echo Servidor iniciado. Pressione qualquer tecla para fechar...
 pause > nul
 """
-    bat_path = os.path.join(desktop, 'ACC_Server_Launcher.bat')
+    bat_path = os.path.join(save_dir, 'ACC_Server_Launcher.bat')
     with open(bat_path, 'w', encoding='utf-8') as f:
         f.write(bat_content)
     return jsonify({'status': f'Atalho criado em: {bat_path}'})
@@ -177,7 +236,7 @@ def save_preset():
     # Extrai os arquivos de configuração do payload
     # Espera-se que venha um objeto com keys: configuration, settings, event, rules
     preset_data = {}
-    for key in ['configuration', 'settings', 'event', 'rules']:
+    for key in ['configuration', 'settings', 'event', 'rules', 'entrylist', 'assistRules', 'bop']:
         if key in data:
             preset_data[key] = data[key]
     if not preset_data:
@@ -199,7 +258,10 @@ def load_preset(name):
         'configuration': 'configuration.json',
         'settings': 'settings.json',
         'event': 'event.json',
-        'rules': 'eventRules.json'
+        'rules': 'eventRules.json',
+        'entrylist': 'entrylist.json',
+        'assistRules': 'assistRules.json',
+        'bop': 'bop.json'
     }
     for key, filename in mapping.items():
         if key in preset:
@@ -223,5 +285,14 @@ def get_logs():
         lines = f.readlines()[-50:]  # últimas 50 linhas
     return jsonify({'logs': lines})
 
+def open_browser():
+    """Abre o navegador na página da aplicação."""
+    webbrowser.open_new("http://127.0.0.1:5000")
+
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    # Abre o navegador em uma thread separada para não bloquear a inicialização do servidor
+    if not os.environ.get("WERKZEUG_RUN_MAIN"):
+        threading.Timer(1, open_browser).start()
+    
+    # Inicia o servidor Flask
+    app.run(host='127.0.0.1', port=5000, debug=False)
