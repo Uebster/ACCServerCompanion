@@ -285,6 +285,26 @@ def pick_server_dir():
     
     return jsonify({'status': f'Pasta do servidor atualizada com sucesso! O caminho foi ajustado para: {final_path}', 'path': final_path})
 
+
+@app.route('/api/pick_entrylist_dir', methods=['POST'])
+def pick_entrylist_dir():
+    """Abre um diálogo para escolher a pasta para o entrylist centralizado."""
+    if not tk:
+        return jsonify({'error': 'Tkinter não está instalado. Seleção de pasta indisponível.'}), 500
+
+    root = tk.Tk()
+    root.withdraw()
+    root.attributes("-topmost", True)
+    
+    dir_path = filedialog.askdirectory(title='Selecione a pasta contendo o entrylist.json centralizado')
+    root.destroy()
+
+    if not dir_path:
+        return jsonify({'status': 'Nenhuma pasta selecionada.'})
+
+    return jsonify({'status': 'Pasta selecionada.', 'path': dir_path})
+
+
 @app.route('/api/create_shortcut_dialog', methods=['POST'])
 def create_shortcut_dialog():
     """Abre um diálogo para escolher onde salvar o atalho."""
@@ -318,6 +338,36 @@ pause > nul
         f.write(bat_content)
         
     return jsonify({'status': f'Atalho criado em: {file_path}'})
+
+@app.route('/api/save_entrylist_as', methods=['POST'])
+def save_entrylist_as():
+    """Abre um diálogo para escolher onde salvar o entrylist.json e salva."""
+    if not tk:
+        return jsonify({'error': 'Tkinter não está instalado. Salvar como indisponível.'}), 500
+
+    data = request.json
+
+    root = tk.Tk()
+    root.withdraw()
+    root.attributes("-topmost", True)
+    
+    file_path = filedialog.asksaveasfilename(
+        title='Salvar Entry List como...',
+        defaultextension=".json",
+        initialfile='entrylist.json',
+        filetypes=[("JSON files", "*.json"), ("All files", "*.*")]
+    )
+    root.destroy()
+
+    if not file_path:
+        return jsonify({'status': 'Operação de salvar cancelada.'})
+
+    try:
+        with codecs.open(file_path, 'w', encoding='utf-8') as f:
+            json.dump(data, f, indent=2, ensure_ascii=False)
+        return jsonify({'status': 'ok', 'message': f'Entry list salva em: {file_path}'})
+    except Exception as e:
+        return jsonify({'error': f'Erro ao salvar entry list: {str(e)}'}), 500
 
 # ================== PRESETS ==================
 

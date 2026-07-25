@@ -234,3 +234,11 @@ button:hover { background: var(--soft); border-color: var(--accent); }
     flex-direction: column;
     gap: 20px;
 }
+
+/* Correção para checkboxes específicos com espaçamento indesejado */
+.label-checkbox-fix {
+    justify-content: justify; /* Alinha o conteúdo à esquerda */
+    gap: 8px; /* Reduz o espaço entre o texto e o checkbox */
+    max-width: 250px;     /* 💡 Faz o container ter exatamente a largura do conteúdo */
+
+}

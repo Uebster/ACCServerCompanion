@@ -76,9 +76,9 @@
                     <label class="field-block tooltip-label" data-tooltip="Porta para comunicação do estado da corrida (posições, etc).">UDP Port <div class="field-control"><input type="number" x-model.number="config.udpPort"><span class="value-pill" x-text="config.udpPort"></span></div></label>
                     <label class="field-block tooltip-label" data-tooltip="Porta principal para os pilotos se conectarem ao servidor.">TCP Port <div class="field-control"><input type="number" x-model.number="config.tcpPort"><span class="value-pill" x-text="config.tcpPort"></span></div></label>
                     <label class="field-block tooltip-label" data-tooltip="Número máximo de carros permitidos no servidor. Limitado pelo número de pitboxes da pista.">Max Connections <div class="field-control"><input type="range" min="1" :max="maxPits" x-model.number="config.maxConnections"><span class="value-pill" x-text="config.maxConnections"></span></div></label>
-                    <label class="tooltip-label" data-tooltip="Se ativado, o servidor aparecerá na lista de servidores públicos da comunidade.">Register to Lobby <input type="checkbox" x-model="config.registerToLobby"></label>
-                    <label class="tooltip-label" data-tooltip="Se ativado, o servidor pode ser encontrado por outros jogadores na mesma rede local (LAN).">LAN Discovery <input type="checkbox" x-model="config.lanDiscovery"></label>
-                    <label class="field-block tooltip-label" data-tooltip="Define um IP público manualmente. Útil se o servidor estiver atrás de um gateway ou NAT.">IP público <div class="field-control"><input type="text" x-model="config.publicIP" placeholder="Ex.: 203.0.113.10"><span class="value-pill" x-text="config.publicIP || '—'"></span></div></label>
+                    <label class="tooltip-label label-checkbox-fix" data-tooltip="Se ativado, o servidor aparecerá na lista de servidores públicos da comunidade.">Register to Lobby <input type="checkbox" x-model="config.registerToLobby"></label>
+                    <label class="tooltip-label label-checkbox-fix" data-tooltip="Se ativado, o servidor pode ser encontrado por outros jogadores na mesma rede local (LAN).">LAN Discovery <input type="checkbox" x-model="config.lanDiscovery"></label>
+                    <label class="field-block tooltip-label" data-tooltip="Define um IP público manualmente. Útil se o servidor estiver atrás de um gateway ou NAT.">IP público <div class="field-control"><input type="text" x-model="config.publicIP" placeholder="Ex.: 203.0.113.10"></div></label>
                     <div class="action-row">
                         <button @click="saveAndStart('configuration.json', config)">Salvar e iniciar</button>
                         <button @click="save('configuration.json', config)">Salvar</button>
@@ -95,7 +95,7 @@
                         <label class="tooltip-label" data-tooltip="O nome que será exibido para os jogadores na lista de servidores.">Nome do Servidor <input type="text" x-model="settings.serverName"></label>
                         <label class="tooltip-label" data-tooltip="Senha que os pilotos devem usar para entrar no servidor.">Senha (pilotos)
                             <div class="password-wrapper">
-                                <input :type="visibility.password ? 'text' : 'password'" x-model="settings.password">
+                                <input :type="visibility.password ? 'text' : 'password'" x-model="settings.password" placeholder="" autocomplete="new-password">
                                 <button type="button" @click="togglePassword('password')" class="btn-icon" title="Mostrar/Ocultar senha">
                                     <svg x-show="!visibility.password" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0z"/><path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8zm8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z"/></svg>
                                     <svg x-show="visibility.password" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" style="display: none;"><path d="m10.79 12.912-1.614-1.615a3.5 3.5 0 0 1-4.474-4.474l-2.06-2.06C.938 6.278 0 8 0 8s3 5.5 8 5.5a7.029 7.029 0 0 0 2.79-.588zM5.21 3.088A7.028 7.028 0 0 1 8 2.5c5 0 8 5.5 8 5.5s-.939 1.721-2.641 3.238l-2.062-2.062a3.5 3.5 0 0 0-4.474-4.474L5.21 3.089z"/><path d="M5.525 7.646a2.5 2.5 0 0 0 2.829 2.829l-2.83-2.829zm4.95.708-2.829-2.83a2.5 2.5 0 0 1 2.829 2.829zm3.171 6-12-12 .708-.708 12 12-.708.708z"/></svg>
@@ -104,7 +104,7 @@
                         </label>
                         <label class="tooltip-label" data-tooltip="Senha para espectadores entrarem no servidor. Deve ser diferente da senha dos pilotos.">Senha Espectador
                             <div class="password-wrapper">
-                                <input :type="visibility.spectatorPassword ? 'text' : 'password'" x-model="settings.spectatorPassword">
+                                <input :type="visibility.spectatorPassword ? 'text' : 'password'" x-model="settings.spectatorPassword" autocomplete="new-password">
                                 <button type="button" @click="togglePassword('spectatorPassword')" class="btn-icon" title="Mostrar/Ocultar senha">
                                     <svg x-show="!visibility.spectatorPassword" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0z"/><path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8zm8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z"/></svg>
                                     <svg x-show="visibility.spectatorPassword" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" style="display: none;"><path d="m10.79 12.912-1.614-1.615a3.5 3.5 0 0 1-4.474-4.474l-2.06-2.06C.938 6.278 0 8 0 8s3 5.5 8 5.5a7.029 7.029 0 0 0 2.79-.588zM5.21 3.088A7.028 7.028 0 0 1 8 2.5c5 0 8 5.5 8 5.5s-.939 1.721-2.641 3.238l-2.062-2.062a3.5 3.5 0 0 0-4.474-4.474L5.21 3.089z"/><path d="M5.525 7.646a2.5 2.5 0 0 0 2.829 2.829l-2.83-2.829zm4.95.708-2.829-2.83a2.5 2.5 0 0 1 2.829 2.829zm3.171 6-12-12 .708-.708 12 12-.708.708z"/></svg>
@@ -113,7 +113,7 @@
                         </label>
                         <label class="tooltip-label" data-tooltip="Senha para obter privilégios de administrador no chat do jogo.">Senha Admin
                             <div class="password-wrapper">
-                                <input :type="visibility.adminPassword ? 'text' : 'password'" x-model="settings.adminPassword">
+                                <input :type="visibility.adminPassword ? 'text' : 'password'" x-model="settings.adminPassword" autocomplete="new-password">
                                 <button type="button" @click="togglePassword('adminPassword')" class="btn-icon" title="Mostrar/Ocultar senha">
                                     <svg x-show="!visibility.adminPassword" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0z"/><path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8zm8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z"/></svg>
                                     <svg x-show="visibility.adminPassword" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" style="display: none;"><path d="m10.79 12.912-1.614-1.615a3.5 3.5 0 0 1-4.474-4.474l-2.06-2.06C.938 6.278 0 8 0 8s3 5.5 8 5.5a7.029 7.029 0 0 0 2.79-.588zM5.21 3.088A7.028 7.028 0 0 1 8 2.5c5 0 8 5.5 8 5.5s-.939 1.721-2.641 3.238l-2.062-2.062a3.5 3.5 0 0 0-4.474-4.474L5.21 3.089z"/><path d="M5.525 7.646a2.5 2.5 0 0 0 2.829 2.829l-2.83-2.829zm4.95.708-2.829-2.83a2.5 2.5 0 0 1 2.829 2.829zm3.171 6-12-12 .708-.708 12 12-.708.708z"/></svg>
@@ -141,7 +141,12 @@
                         <label class="tooltip-label" data-tooltip="Salva os resultados da sessão em arquivos .json na pasta 'results'.">Gerar leaderboards <input type="checkbox" x-model="settings.dumpLeaderboards"></label>
                         <label class="field-block tooltip-label" data-tooltip="Define se a volta de formação será curta (padrão) ou longa.">Volta de formação <div class="field-control"><select x-model.number="settings.shortFormationLap"><option :value="1">Curta</option><option :value="0">Longa</option></select><span class="value-pill" x-text="settings.shortFormationLap ? 'Curta' : 'Longa'"></span></div></label>
                         <label class="field-block tooltip-label" data-tooltip="Define o tipo de volta de formação: Padrão com controle de posição (3), largada livre (1), ou estilo antigo com limiter (0).">Tipo de volta de formação <div class="field-control"><select x-model.number="settings.formationLapType"><option value="3">3 - Padrão</option><option value="1">1 - Livre (manual)</option><option value="0">0 - Antiga (limiter)</option></select><span class="value-pill" x-text="settings.formationLapType"></span></div></label>
-                        <label class="field-block tooltip-label" data-tooltip="Permite usar um arquivo 'entrylist.json' de um caminho centralizado para múltiplos servidores.">Caminho central de entry list <div class="field-control"><input type="text" x-model="settings.centralEntryListPath"><span class="value-pill" x-text="settings.centralEntryListPath || '—'"></span></div></label>
+                        <label class="field-block tooltip-label" data-tooltip="Permite usar um arquivo 'entrylist.json' de um caminho centralizado para múltiplos servidores.">Caminho central de entry list 
+                            <div class="field-control">
+                                <input type="text" x-model="settings.centralEntryListPath">
+                                <button @click.prevent="pickEntrylistDir()" title="Selecionar pasta" style="padding: 4px 8px; min-width: 0;">📂</button>
+                            </div>
+                        </label>
                     </div>
                 </div>
                 <div class="action-row" style="justify-content: flex-start; margin-top: 20px;">
@@ -344,6 +349,7 @@
                             <button @click="addEntryListEntry()" class="btn-add">+ Adicionar piloto</button>
                             <div class="action-row">
                                 <button @click="save('entrylist.json', entrylist)">Salvar entry list</button>
+                                <button @click="saveEntryListAs()">Salvar Entry List Como...</button>
                                 <button @click="load('entrylist.json')">Recarregar</button>
                             </div>
                         </div>

@@ -138,6 +138,17 @@ function accApp() {
                     }
                 });
         },
+        pickEntrylistDir() {
+            fetch('/api/pick_entrylist_dir', { method: 'POST' })
+                .then(r => r.json())
+                .then(res => {
+                    if (res.error) {
+                        alert(res.error);
+                    } else if (res.path) {
+                        this.settings.centralEntryListPath = res.path;
+                    }
+                });
+        },
         applySessionTemplate() {
             if (!this.sessionTemplate) return;
             fetch('/api/apply-session-template', {
@@ -251,6 +262,18 @@ function accApp() {
             })
             .then(r => r.json())
             .then(res => alert(res.status || res.error));
+        },
+        saveEntryListAs() {
+            fetch('/api/save_entrylist_as', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(this.entrylist)
+            })
+            .then(r => r.json())
+            .then(res => {
+                if (res.error) alert('❌ Erro: ' + res.error);
+                else alert('✅ ' + res.message || 'Entry list salva com sucesso!');
+            });
         },
         loadPreset() {
             fetch('/api/presets')
