@@ -4,6 +4,8 @@ function accApp() {
         activeTab: 'setup',
         showGuide: false,
         theme: localStorage.getItem('acc-theme') || 'dark',
+        serverStatus: 'stopped', // 'running', 'stopped'
+        fileStatus: {},
         server_dir_info: {},
         tracks: window.ACC_INITIAL_DATA?.tracks || {},
         carGroups: window.ACC_INITIAL_DATA?.carGroups || [],
@@ -41,11 +43,29 @@ function accApp() {
             this.load('assistRules.json');
             this.load('bop.json');
             this.loadServerInfo();
+
+            // Verifica o status do servidor ao iniciar e a cada 5 segundos
+            this.checkServerStatus();
+            setInterval(() => this.checkServerStatus(), 5000);
         },
-        load(filename) {
-            fetch('/api/config/' + filename)
+        checkServerStatus() {
+            fetch('/api/server_status')
                 .then(r => r.json())
                 .then(data => {
+                    this.serverStatus = data.status;
+                });
+        },
+        load(filename) {
+            this.fileStatus[filename] = 'loading';
+            fetch('/api/config/' + filename)
+                .then(r => {
+                    if (!r.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return r.json();
+                })
+                .then(data => {
+                    this.fileStatus[filename] = 'loaded';
                     if (filename === 'configuration.json') {
                         this.config = data;
                         this.maxPits = this.config.maxConnections || 30;
@@ -177,24 +197,6 @@ function accApp() {
                 else alert('✅ ' + res.message || 'Salvo com sucesso!');
             });
         },
-        saveAndStart(filename, data) {
-            const confirmStart = confirm('⚠️ Antes de iniciar, confira se o servidor está parado e se as configurações estão corretas. Deseja salvar e iniciar agora?');
-            if (!confirmStart) return;
-            fetch('/api/config/' + filename, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
-            })
-            .then(r => r.json())
-            .then(res => {
-                if (res.error) {
-                    alert('❌ Erro: ' + res.error);
-                    return;
-                }
-                alert('✅ Configuração salva. Agora iniciando o servidor...');
-                this.startServer();
-            });
-        },
         selectTrack(key) {
             this.event.track = key;
             this.maxPits = this.tracks[key].pitboxes;
@@ -234,7 +236,26 @@ function accApp() {
         startServer() {
             fetch('/api/start_server', { method: 'POST' })
                 .then(r => r.json())
-                .then(res => alert(res.status || res.error));
+                .then(res => {
+                    if (res.error) {
+                        alert('❌ Erro: ' + res.error);
+                    } else {
+                        alert('✅ ' + (res.status || 'Servidor iniciado!'));
+                        this.serverStatus = 'running';
+                    }
+                });
+        },
+        stopServer() {
+            fetch('/api/stop_server', { method: 'POST' })
+                .then(r => r.json())
+                .then(res => {
+                    if (res.error) {
+                        alert('❌ Erro: ' + res.error);
+                    } else {
+                        alert('✅ ' + (res.status || 'Servidor parado!'));
+                        this.serverStatus = 'stopped';
+                    }
+                });
         },
         createShortcut() {
             fetch('/api/create_shortcut_dialog', { method: 'POST' })

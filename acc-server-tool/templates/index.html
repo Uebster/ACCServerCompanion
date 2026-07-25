@@ -23,8 +23,16 @@
                 <li @click="activeTab='admin'" :class="{active: activeTab=='admin'}">Admin</li>
             </ul>
             <div class="sidebar-actions">
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                    <span class="server-status-indicator" :class="serverStatus === 'running' ? 'running' : 'stopped'"></span>
+                    <span x-text="serverStatus === 'running' ? 'Servidor Online' : 'Servidor Offline'"></span>
+                </div>
                 <button @click="toggleTheme()" class="theme-toggle" x-text="theme === 'dark' ? '☀️ Modo claro' : '🌙 Modo escuro'"></button>
-                <button @click="startServer()" class="btn-start">▶ START SERVER</button>
+                <button 
+                    :class="serverStatus === 'running' ? 'btn-stop' : 'btn-start'"
+                    @click="serverStatus === 'running' ? stopServer() : startServer()">
+                    <span x-text="serverStatus === 'running' ? '■ PARAR SERVIDOR' : '▶ START SERVER'"></span>
+                </button>
                 <button @click="createShortcut()" class="btn-shortcut">📎 Criar Atalho</button>
                 <button @click="openGuide()" class="btn-shortcut">❓ Guia passo a passo</button>
                 <button @click="loadPreset()" class="btn-preset">📂 Carregar Preset</button>
@@ -68,6 +76,7 @@
             <!-- Aba Network -->
             <div x-show="activeTab=='network'">
                 <h2>Configuração de Rede</h2>
+                <div class="info-card wide" style="margin-top: 0; margin-bottom: 20px;">Gerenciando: <code>configuration.json</code></div>
                 <div class="info-card wide">
                     <p><strong>Dica:</strong> Para jogar online apenas com amigos (sem um servidor dedicado), ative "LAN Discovery" e peça para todos os seus amigos se conectarem na mesma rede VPN usando um programa como <strong>Hamachi</strong> ou <strong>Radmin VPN</strong>. Assim, o servidor aparecerá para eles na busca de servidores LAN.</p>
                     <p style="margin-top: 8px;"><strong>Atenção:</strong> Só altere as portas UDP e TCP se você souber o que está fazendo e tiver conhecimento sobre redirecionamento de portas (port forwarding).</p>
@@ -80,7 +89,6 @@
                     <label class="tooltip-label label-checkbox-fix" data-tooltip="Se ativado, o servidor pode ser encontrado por outros jogadores na mesma rede local (LAN).">LAN Discovery <input type="checkbox" x-model="config.lanDiscovery"></label>
                     <label class="field-block tooltip-label" data-tooltip="Define um IP público manualmente. Útil se o servidor estiver atrás de um gateway ou NAT.">IP público <div class="field-control"><input type="text" x-model="config.publicIP" placeholder="Ex.: 203.0.113.10"></div></label>
                     <div class="action-row">
-                        <button @click="saveAndStart('configuration.json', config)">Salvar e iniciar</button>
                         <button @click="save('configuration.json', config)">Salvar</button>
                         <button @click="load('configuration.json')">Recarregar</button>
                     </div>
@@ -89,6 +97,7 @@
             <!-- Aba Server (settings) -->
             <div x-show="activeTab=='server'">
                 <h2>Configuração do Servidor</h2>
+                <div class="info-card wide" style="margin-top: 0; margin-bottom: 20px;">Gerenciando: <code>settings.json</code></div>
                 <div class="form-columns-wrapper">
                     <!-- Coluna da Esquerda -->
                     <div class="form-column">
@@ -127,9 +136,9 @@
                                 </template>
                             </select>
                         </label>
-                        <label class="field-block tooltip-label" data-tooltip="Safety Rating (SA) mínimo que um piloto precisa ter para entrar. Valor de 0 a 99.">SA mínimo <div class="field-control"><input type="range" min="0" max="99" x-model.number="settings.safetyRatingRequirement"><span class="value-pill" x-text="settings.safetyRatingRequirement + ' / 99'"></span></div></label>
-                        <label class="field-block tooltip-label" data-tooltip="Racecraft (RC) mínimo que um piloto precisa ter para entrar. Valor de 0 a 99.">Racecraft mínimo <div class="field-control"><input type="range" min="0" max="99" x-model.number="settings.racecraftRatingRequirement"><span class="value-pill" x-text="settings.racecraftRatingRequirement + ' / 99'"></span></div></label>
-                        <label class="field-block tooltip-label" data-tooltip="Número de medalhas da pista que o piloto precisa ter. Valor de 0 a 3.">Medalhas da Pista <div class="field-control"><input type="range" min="0" max="3" x-model.number="settings.trackMedalsRequirement"><span class="value-pill" x-text="settings.trackMedalsRequirement + ' / 3'"></span></div></label>
+                        <label class="field-block tooltip-label" data-tooltip="Safety Rating (SA) mínimo que um piloto precisa ter para entrar. Valor de -1 a 99 (-1 para desabilitar).">SA mínimo <div class="field-control"><input type="range" min="-1" max="99" x-model.number="settings.safetyRatingRequirement"><span class="value-pill" x-text="settings.safetyRatingRequirement === -1 ? 'Desabilitado' : settings.safetyRatingRequirement + ' / 99'"></span></div></label>
+                        <label class="field-block tooltip-label" data-tooltip="Racecraft (RC) mínimo que um piloto precisa ter para entrar. Valor de -1 a 99 (-1 para desabilitar).">Racecraft mínimo <div class="field-control"><input type="range" min="-1" max="99" x-model.number="settings.racecraftRatingRequirement"><span class="value-pill" x-text="settings.racecraftRatingRequirement === -1 ? 'Desabilitado' : settings.racecraftRatingRequirement + ' / 99'"></span></div></label>
+                        <label class="field-block tooltip-label" data-tooltip="Número de medalhas da pista que o piloto precisa ter. Valor de 0 a 3 (0 para desabilitar).">Medalhas da Pista <div class="field-control"><input type="range" min="0" max="3" x-model.number="settings.trackMedalsRequirement"><span class="value-pill" x-text="settings.trackMedalsRequirement + ' / 3'"></span></div></label>
                     </div>
                     <!-- Coluna da Direita -->
                     <div class="form-column">
@@ -150,7 +159,6 @@
                     </div>
                 </div>
                 <div class="action-row" style="justify-content: flex-start; margin-top: 20px;">
-                    <button @click="saveAndStart('settings.json', settings)">Salvar e iniciar</button>
                     <button @click="save('settings.json', settings)">Salvar</button>
                     <button @click="load('settings.json')">Recarregar</button>
                 </div>
@@ -158,6 +166,7 @@
             <!-- Aba Event (com seletor de pista e sessões) -->
             <div x-show="activeTab=='event'">
                 <h2>Evento</h2>
+                <div class="info-card wide" style="margin-top: 0; margin-bottom: 20px;">Gerenciando: <code>event.json</code></div>
                 <div class="template-bar">
                     <label class="tooltip-label" data-tooltip="Carrega uma configuração de sessões pré-definida.">Modelo de sessões
                         <select x-model="sessionTemplate" @change="applySessionTemplate()">
@@ -227,13 +236,13 @@
                     <button @click="addSession()" class="btn-add">+ Adicionar Sessão</button>
                 </div>
                 <div class="action-row">
-                    <button @click="saveAndStart('event.json', event)">Salvar e iniciar</button>
                     <button @click="save('event.json', event)">Salvar Evento</button>
                 </div>
             </div>
             <!-- Aba Rules -->
             <div x-show="activeTab=='rules'">
                 <h2>Regras do Evento</h2>
+                <div class="info-card wide" style="margin-top: 0; margin-bottom: 20px;">Gerenciando: <code>eventRules.json</code></div>
                 <div class="form-columns-wrapper">
                     <!-- Coluna da Esquerda -->
                     <div class="form-column">
@@ -317,6 +326,7 @@
                     <div class="advanced-column">
                         <div class="advanced-card">
                             <h3>Regras de assistência</h3>
+                            <div class="info-card" style="padding: 8px 12px; margin: -5px 0 10px 0;">Gerenciando: <code>assistRules.json</code></div>
                             <label class="tooltip-label" data-tooltip="Se marcado, força o Controle de Tração para o nível máximo permitido no carro. Desmarcado, desativa o TC para todos.">Forçar Controle de Tração (TC) <input type="checkbox" x-model="assistRules.tractionControl"></label>
                             <label class="tooltip-label" data-tooltip="Se marcado, força o ABS para o nível máximo permitido no carro. Desmarcado, desativa o ABS para todos.">Forçar ABS <input type="checkbox" x-model="assistRules.abs"></label>
                             <label class="tooltip-label" data-tooltip="Define o percentual máximo de Controle de Estabilidade (SC) que pode ser usado (0 a 100). 0 desativa completamente.">Nível Máximo de Controle de Estabilidade (%) <div class="field-control"><input type="range" min="0" max="100" x-model.number="assistRules.stabilityControlLevelMax"><span class="value-pill" x-text="assistRules.stabilityControlLevelMax"></span></div></label>
@@ -337,6 +347,7 @@
                     <div class="advanced-column">
                         <div class="advanced-card">
                             <h3>Lista de pilotos</h3>
+                            <div class="info-card" style="padding: 8px 12px; margin: -5px 0 10px 0;">Gerenciando: <code>entrylist.json</code></div>
                             <template x-for="(entry, idx) in entrylist.entries" :key="idx">
                                 <div class="entry-row">
                                     <input type="text" x-model="entry.name" placeholder="Nome">
@@ -355,6 +366,7 @@
                         </div>
                         <div class="advanced-card">
                             <h3>Balance of Performance</h3>
+                            <div class="info-card" style="padding: 8px 12px; margin: -5px 0 10px 0;">Gerenciando: <code>bop.json</code></div>
                             <template x-for="(item, idx) in bop.entries" :key="idx">
                                 <div class="bop-row">
                                     <input type="text" x-model="item.carClass" placeholder="Classe">

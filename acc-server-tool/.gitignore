@@ -1,8 +1,10 @@
 .venv/
 __pycache__/
+tests/
 *.py[cod]
 *.log
 .pytest_cache/
 server_dir/
 *.sqlite3
 .DS_Store
+sketch.md

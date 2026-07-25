@@ -71,6 +71,9 @@ os.makedirs(CFG_DIR, exist_ok=True)
 os.makedirs(PRESET_DIR, exist_ok=True)
 os.makedirs(os.path.join(app.static_folder, 'images/tracks'), exist_ok=True)
 
+# Variável global para manter o estado do processo do servidor
+SERVER_PROCESS = None
+
 def get_cfg_path(filename):
     """Caminho absoluto para arquivo na pasta cfg"""
     return os.path.join(CFG_DIR, filename)
@@ -214,19 +217,52 @@ def apply_session_template():
 
 @app.route('/api/start_server', methods=['POST'])
 def start_server():
-    """Inicia o servidor accServer.exe"""
+    """Inicia o servidor accServer.exe e armazena o processo."""
+    global SERVER_PROCESS
+    if SERVER_PROCESS and SERVER_PROCESS.poll() is None:
+        return jsonify({'error': 'O servidor já está em execução.'}), 400
+
     server_exe = os.path.join(SERVER_DIR, 'accServer.exe')
     if not os.path.exists(server_exe):
         return jsonify({'error': 'accServer.exe não encontrado em ' + SERVER_DIR}), 404
     try:
-        # Prepara flags para garantir que o processo seja desvinculado e não crie uma janela de console
-        DETACHED_PROCESS = 0x00000008
         CREATE_NO_WINDOW = 0x08000000
-        # Inicia o servidor em um subprocesso completamente novo e sem janela
-        subprocess.Popen([server_exe], cwd=SERVER_DIR, creationflags=DETACHED_PROCESS | CREATE_NO_WINDOW)
+        SERVER_PROCESS = subprocess.Popen([server_exe], cwd=SERVER_DIR, creationflags=CREATE_NO_WINDOW)
         return jsonify({'status': 'Servidor iniciado com sucesso!'})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+@app.route('/api/stop_server', methods=['POST'])
+def stop_server():
+    """Para o processo do servidor accServer.exe."""
+    global SERVER_PROCESS
+    if SERVER_PROCESS and SERVER_PROCESS.poll() is None:
+        try:
+            SERVER_PROCESS.terminate()
+            SERVER_PROCESS.wait(timeout=5) # Espera o processo terminar
+            SERVER_PROCESS = None
+            return jsonify({'status': 'Servidor parado com sucesso!'})
+        except subprocess.TimeoutExpired:
+            SERVER_PROCESS.kill()
+            SERVER_PROCESS = None
+            return jsonify({'status': 'Servidor forçado a parar.'})
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
+    else:
+        SERVER_PROCESS = None # Garante que está limpo se não estiver rodando
+        return jsonify({'error': 'Servidor não está em execução.'}), 404
+
+@app.route('/api/server_status', methods=['GET'])
+def server_status():
+    """Verifica e retorna o status do servidor."""
+    global SERVER_PROCESS
+    if SERVER_PROCESS and SERVER_PROCESS.poll() is None:
+        return jsonify({'status': 'running'})
+    else:
+        # Limpa a variável se o processo morreu por conta própria
+        SERVER_PROCESS = None
+        return jsonify({'status': 'stopped'})
+
 
 @app.route('/api/create_shortcut', methods=['POST'])
 def create_shortcut():
