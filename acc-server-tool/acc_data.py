@@ -94,7 +94,7 @@ DEFAULT_CONFIG = {
         "trackMedalsRequirement": 0,
         "safetyRatingRequirement": -1,
         "racecraftRatingRequirement": -1,
-        "isRaceLocked": 0,
+        "isRaceLocked": 1,
         "randomizeTrackWhenEmpty": 0,
         "allowAutoDQ": 1,
         "shortFormationLap": 1,
