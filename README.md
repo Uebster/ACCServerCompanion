@@ -1,107 +1,74 @@
-# ACC Server Manager
+# ACC Server Companion
 
-Ferramenta web para gerenciar servidores dedicados do **Assetto Corsa Competizione** (ACC).
+A web-based tool to manage [Assetto Corsa Competizione](https://www.assettocorsa.it/competizione/) (ACC) dedicated servers.
 
-## Objetivo
+## Objective
 
-Simplificar a edição dos arquivos de configuração JSON do servidor, eliminando erros de sintaxe e facilitando a criação de eventos personalizados.
+This tool simplifies the editing of the server's JSON configuration files, eliminating syntax errors and making it easy to create custom events.
 
-## Funcionalidades
+## Features
 
-- Editor visual para os arquivos:
-  - `configuration.json` (rede)
-  - `settings.json` (identificação e requisitos)
-  - `event.json` (pista, clima, sessões)
-  - `eventRules.json` (regras esportivas)
-  - `entrylist.json`, `assistRules.json`, `bop.json` (avançado)
-- Seletor de pistas com imagens e limite automático de pitboxes.
-- Validações em tempo real (portas UDP/TCP, SteamID, limites de grid).
-- Presets: salve e carregue configurações completas.
-- Iniciador do servidor diretamente pela interface.
-- Criação de atalho na área de trabalho (.bat).
-- Tema escuro com cores neon.
+- Visual editor for the following files:
+  - `configuration.json` (network)
+  - `settings.json` (identification and requirements)
+  - `event.json` (track, weather, sessions)
+  - `eventRules.json` (sporting rules)
+  - `entrylist.json`, `assistRules.json`, `bop.json` (advanced)
+- Track selector with images and automatic pitbox limits.
+- Real-time validation (UDP/TCP ports, SteamID, grid limits).
+- Presets: save and load complete server configurations.
+- Start the server directly from the interface.
+- Create a desktop shortcut (`.bat`).
+- Dark theme with neon colors.
 
-## Estrutura de Pastas
-acc-server-tool/
-├── app.py # Backend Flask
-├── acc_data.py # Dados estáticos (pistas, classes, defaults)
-├── requirements.txt # Dependências
-├── static/
-│ ├── css/style.css # Estilos
-│ ├── js/app.js # Lógica frontend (Alpine.js)
-│ └── images/tracks/ # Miniaturas das pistas (baixadas sob demanda)
-├── templates/
-│ └── index.html # Página principal
-├── presets/ # Presets salvos
-└── server_dir/ # (configurável) Pasta onde está accServer.exe e cfg/
-├── accServer.exe
-└── cfg/ # Arquivos JSON editados
+## Technologies Used
 
-text
+- **Backend:** Python with [Flask](https://flask.palletsprojects.com/)
+- **Frontend:** [Alpine.js](https://alpinejs.dev/) for reactive components
+- **UI:** Custom CSS for a dark theme
 
-## Configuração
+## Installation
 
-1. Instale as dependências:
-   ```bash
-   pip install -r requirements.txt
-Defina a variável de ambiente ACC_SERVER_DIR com o caminho para a pasta do servidor ACC (onde está accServer.exe e a subpasta cfg). Exemplo:
+### Prerequisites
 
-Windows: set ACC_SERVER_DIR=C:\Steam\steamapps\common\Assetto Corsa Competizione\server
+- [Python 3](https://www.python.org/downloads/)
+- [ACC Dedicated Server](https://steamcommunity.com/app/247800/discussions/0/1697168437877299041/) installed via Steam
 
-Linux/Mac: export ACC_SERVER_DIR=/caminho/para/server
+### Steps
 
-Execute:
+1.  **Clone the repository:**
+    ```bash
+    git clone https://github.com/your-username/acc-server-companion.git
+    cd acc-server-companion/acc-server-tool
+    ```
 
-bash
-python app.py
-Acesse no navegador: http://localhost:5000
+2.  **Install the dependencies:**
+    ```bash
+    pip install -r requirements.txt
+    ```
 
-Uso
-Navegue pelas abas para editar cada arquivo.
+## Usage
 
-Preencha os campos; sliders e toggles atualizam os valores.
+1.  **Run the application:**
+    ```bash
+    python app.py
+    ```
+    The application will open in your web browser at `http://localhost:5000`.
 
-Clique em "Salvar" para gravar no arquivo (backup automático).
+2.  **Set the server directory:**
+    - On the "Initial Setup" tab, click "Change Server Folder" and select the root directory of your ACC Dedicated Server (the one containing `accServer.exe`).
 
-Use a seção "Avançado" para entrylist, assistRules e bop (em desenvolvimento).
+3.  **Configure your server:**
+    - Navigate through the tabs to edit the different configuration files.
+    - Your changes are saved automatically when you click the "Save" button on each page.
 
-Clique em "START SERVER" para iniciar o servidor.
+4.  **Start the server:**
+    - Click the "START SERVER" button to launch the `accServer.exe` process.
 
-Use "Criar Atalho" para gerar um .bat na área de trabalho.
+## Contributing
 
-Observações
-O servidor deve estar parado ao editar os arquivos (salvo exceções).
+Contributions are welcome! If you have ideas for improvements or new features, feel free to open an issue or submit a pull request.
 
-Sempre faça backup dos seus arquivos antes de testar novas configurações.
+## License
 
-As imagens das pistas são baixadas da internet na primeira visualização; você pode substituí-las manualmente em static/images/tracks/.
-
-Próximos Passos (Melhorias)
-Editor avançado para entrylist com busca por SteamID.
-
-Terminal de logs do servidor em tempo real (WebSocket).
-
-Suporte a múltiplos servidores.
-
-Validação de BoP e ajustes finos.
-
-Licença
-MIT - Livre para uso e modificação.
-
-text
-
----
-
-## 7. Arquivo `requirements.txt`
-Flask==2.3.2
-requests==2.31.0
-
-text
-
----
-
-## Conclusão
-
-Todos os arquivos necessários para a ferramenta foram fornecidos, incluindo a documentação. A estrutura está completa e pronta para uso. Você pode colocar o código nos respectivos arquivos e executar. A ferramenta cobre os principais arquivos de configuração, com validações e recursos extras (presets, atalho, iniciador). A interface com Alpine.js torna a edição dinâmica e interativa.
-
-Agora é só testar com seu servidor ACC real! 🏁
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

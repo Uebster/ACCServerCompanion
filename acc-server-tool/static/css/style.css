@@ -257,3 +257,9 @@ button:hover { background: var(--soft); border-color: var(--accent); }
     max-width: 250px;     /* 💡 Faz o container ter exatamente a largura do conteúdo */
 
 }
+.dirty-indicator {
+    color: var(--warning);
+    font-weight: bold;
+    margin-left: 4px;
+    font-size: 1.2em;
+}

@@ -43,7 +43,7 @@ else:
 APP_CONFIG_FILE = os.path.join(app_path, 'app_config.json')
 
 def get_server_dir():
-    """Lê o caminho do servidor do JSON de configuração, com fallback para env var."""
+    """Lê o caminho do servidor do JSON de configuração."""
     if os.path.exists(APP_CONFIG_FILE):
         with open(APP_CONFIG_FILE, 'r', encoding='utf-8') as f:
             try:
@@ -51,7 +51,7 @@ def get_server_dir():
                 return config.get('server_dir')
             except json.JSONDecodeError:
                 pass  # Ignora arquivo corrompido
-    return os.environ.get('ACC_SERVER_DIR', os.path.join(app_path, 'server_dir'))
+    return None
 
 def save_server_dir(path):
     """Salva o caminho do servidor no JSON de configuração."""
@@ -60,46 +60,78 @@ def save_server_dir(path):
 
 app = Flask(__name__, static_folder=os.path.join(base_path, 'static'), template_folder=os.path.join(base_path, 'templates'))
 
-# Configuração do diretório do servidor (pode ser definido via env ou fixo)
-SERVER_DIR = get_server_dir()
-CFG_DIR = os.path.join(SERVER_DIR, 'cfg')
+# Configuração do diretório do servidor será carregada dinamicamente
+SERVER_DIR = None
+CFG_DIR = None
 PRESET_DIR = os.path.join(app_path, 'presets')
 SESSION_TEMPLATES = SESSION_PRESETS
 
 # Cria diretórios necessários
-os.makedirs(CFG_DIR, exist_ok=True)
 os.makedirs(PRESET_DIR, exist_ok=True)
 os.makedirs(os.path.join(app.static_folder, 'images/tracks'), exist_ok=True)
 
 # Variável global para manter o estado do processo do servidor
 SERVER_PROCESS = None
 
-def get_cfg_path(filename):
-    """Caminho absoluto para arquivo na pasta cfg"""
-    return os.path.join(CFG_DIR, filename)
+def get_validated_cfg_dir():
+    """Busca o server_dir, valida (procurando accServer.exe) e retorna o caminho para a pasta cfg.
+    
+    Raises:
+        ValueError: Se o diretório do servidor não for válido ou não estiver configurado.
+    """
+    server_dir = get_server_dir()
+    if not server_dir or not os.path.exists(os.path.join(server_dir, 'accServer.exe')):
+        raise ValueError("O diretório do servidor do ACC não está configurado ou é inválido.")
+    
+    cfg_dir = os.path.join(server_dir, 'cfg')
+    os.makedirs(cfg_dir, exist_ok=True)
+    return cfg_dir
 
 def load_json(filename, default=None):
     """Carrega um JSON do cfg, retornando default se não existir"""
-    path = get_cfg_path(filename)
+    try:
+        cfg_dir = get_validated_cfg_dir()
+        path = os.path.join(cfg_dir, filename)
+    except ValueError:
+        # Se o diretório não é válido, não podemos carregar, mas também não devemos criar um novo.
+        # Retorna o default para a UI não quebrar.
+        return default or DEFAULT_CONFIG.get(filename, {})
+
     if os.path.exists(path):
         try:
             with codecs.open(path, 'r', encoding='utf-16-le') as f:
                 return json.load(f)
-        except:
+        except Exception:
+            # Em caso de erro de leitura, tenta ler um backup recente se houver
             pass
+    
     # Se não existe ou erro, cria com default
     if default is None:
         default = DEFAULT_CONFIG.get(filename, {})
-    save_json(filename, default)
+    
+    # Não salva automaticamente se o diretório não for válido na chamada.
+    # A UI tentará salvar e receberá o erro de diretório inválido.
+    try:
+        save_json(filename, default)
+    except ValueError:
+        # Silencia o erro aqui, pois a UI será notificada ao tentar salvar.
+        pass
+
     return default
 
 def save_json(filename, data):
-    """Salva JSON no cfg, com backup automático"""
-    path = get_cfg_path(filename)
+    """Salva JSON no cfg, com backup automático e validação de diretório"""
+    cfg_dir = get_validated_cfg_dir()  # Isso vai levantar ValueError se o diretório for inválido
+    path = os.path.join(cfg_dir, filename)
+    
     # Backup
     if os.path.exists(path):
-        backup = path + f".backup_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}"
-        shutil.copy2(path, backup)
+        backup_dir = os.path.join(cfg_dir, 'backups')
+        os.makedirs(backup_dir, exist_ok=True)
+        backup_filename = f"{filename.replace('.json', '')}_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+        backup_path = os.path.join(backup_dir, backup_filename)
+        shutil.copy2(path, backup_path)
+        
     # Salva com encoding UTF-16-LE e formatação limpa
     with codecs.open(path, 'w', encoding='utf-16-le') as f:
         json.dump(data, f, indent=2, ensure_ascii=False, separators=(',', ': '))
@@ -153,8 +185,11 @@ def post_config(filename):
                 if player_id and not player_id.startswith('S') or not len(player_id) == 18:
                     return jsonify({'error': f'SteamID inválida: {player_id}. Deve começar com "S" e ter 18 caracteres.'}), 400
     
-    save_json(filename, data)
-    return jsonify({'status': 'ok', 'message': f'{filename} salvo com sucesso!'})
+    try:
+        save_json(filename, data)
+        return jsonify({'status': 'ok', 'message': f'{filename} salvo com sucesso!'})
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 400
 
 @app.route('/api/tracks/images/<track_name>')
 def track_image(track_name):
@@ -193,13 +228,24 @@ def track_image(track_name):
 @app.route('/api/server-info')
 def server_info():
     """Retorna informações úteis sobre o diretório do servidor"""
-    server_exe = os.path.join(SERVER_DIR, 'accServer.exe')
-    cfg_exists = os.path.isdir(CFG_DIR)
+    server_dir = get_server_dir()
+    if not server_dir:
+        return jsonify({
+            'server_dir': '',
+            'cfg_dir': '',
+            'server_exe_exists': False,
+            'cfg_exists': False,
+            'server_exe_path': '',
+            'session_templates': SESSION_PRESETS,
+        })
+
+    server_exe = os.path.join(server_dir, 'accServer.exe')
+    cfg_dir = os.path.join(server_dir, 'cfg')
     return jsonify({
-        'server_dir': SERVER_DIR,
-        'cfg_dir': CFG_DIR,
+        'server_dir': server_dir,
+        'cfg_dir': cfg_dir,
         'server_exe_exists': os.path.exists(server_exe),
-        'cfg_exists': cfg_exists,
+        'cfg_exists': os.path.isdir(cfg_dir),
         'server_exe_path': server_exe,
         'session_templates': SESSION_PRESETS,
     })
@@ -222,12 +268,17 @@ def start_server():
     if SERVER_PROCESS and SERVER_PROCESS.poll() is None:
         return jsonify({'error': 'O servidor já está em execução.'}), 400
 
-    server_exe = os.path.join(SERVER_DIR, 'accServer.exe')
+    server_dir = get_server_dir()
+    if not server_dir:
+        return jsonify({'error': 'O diretório do servidor do ACC não está configurado.'}), 400
+
+    server_exe = os.path.join(server_dir, 'accServer.exe')
     if not os.path.exists(server_exe):
-        return jsonify({'error': 'accServer.exe não encontrado em ' + SERVER_DIR}), 404
+        return jsonify({'error': f'accServer.exe não encontrado em {server_dir}'}), 404
+    
     try:
         CREATE_NO_WINDOW = 0x08000000
-        SERVER_PROCESS = subprocess.Popen([server_exe], cwd=SERVER_DIR, creationflags=CREATE_NO_WINDOW)
+        SERVER_PROCESS = subprocess.Popen([server_exe], cwd=server_dir, creationflags=CREATE_NO_WINDOW)
         return jsonify({'status': 'Servidor iniciado com sucesso!'})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -264,28 +315,46 @@ def server_status():
         return jsonify({'status': 'stopped'})
 
 
-@app.route('/api/create_shortcut', methods=['POST'])
-def create_shortcut():
-    """Cria um atalho .bat na área de trabalho ou na pasta escolhida pelo usuário."""
-    data = request.get_json(silent=True) or {}
-    target_folder = (data.get('targetFolder') or '').strip()
-    save_dir = target_folder or os.path.join(os.path.expanduser('~'), 'Desktop')
-    os.makedirs(save_dir, exist_ok=True)
+@app.route('/api/create_shortcut_dialog', methods=['POST'])
+def create_shortcut_dialog():
+    """Abre um diálogo para escolher onde salvar o atalho."""
+    server_dir = get_server_dir()
+    if not server_dir:
+        return jsonify({'error': 'O diretório do servidor do ACC não está configurado.'}), 400
+
+    if not tk:
+        return jsonify({'error': 'Tkinter não está instalado. Criação de atalho indisponível.'}), 500
+
+    root = tk.Tk()
+    root.withdraw()
+    root.attributes("-topmost", True)
+
+    file_path = filedialog.asksaveasfilename(
+        title='Salvar atalho do servidor como...',
+        defaultextension=".bat",
+        initialfile='ACC_Server_Launcher.bat',
+        filetypes=[("Batch files", "*.bat"), ("All files", "*.*")]
+    )
+    root.destroy()
+    
+    if not file_path:
+        return jsonify({'status': 'Criação de atalho cancelada.'})
+
     bat_content = f"""@echo off
-cd /d \"{SERVER_DIR}\"
+cd /d \"{server_dir}\"
 echo Iniciando servidor ACC...
 start accServer.exe
 echo Servidor iniciado. Pressione qualquer tecla para fechar...
 pause > nul
 """
-    bat_path = os.path.join(save_dir, 'ACC_Server_Launcher.bat')
-    with open(bat_path, 'w', encoding='utf-8') as f:
+    with open(file_path, 'w', encoding='utf-8') as f:
         f.write(bat_content)
-    return jsonify({'status': f'Atalho criado em: {bat_path}'})
+        
+    return jsonify({'status': f'Atalho criado em: {file_path}'})
 
 @app.route('/api/pick_server_dir', methods=['POST'])
 def pick_server_dir():
-    """Abre um diálogo para escolher a pasta do servidor."""
+    """Abre um diálogo para escolher a pasta do servidor e procura o accServer.exe."""
     if not tk:
         return jsonify({'error': 'Tkinter não está instalado. Seleção de pasta indisponível.'}), 500
 
@@ -293,33 +362,37 @@ def pick_server_dir():
     root.withdraw()
     root.attributes("-topmost", True)
     
-    dir_path = filedialog.askdirectory(title='Selecione a pasta raíz do seu ACC Dedicated Server')
+    initial_dir = get_server_dir() # Começa do diretório já configurado, se houver
+    dir_path = filedialog.askdirectory(
+        title='Selecione a pasta raíz do seu ACC Dedicated Server',
+        initialdir=initial_dir
+    )
     root.destroy()
 
     if not dir_path:
         return jsonify({'status': 'Nenhuma pasta selecionada.'})
 
-    # Validação
-    server_exe_path = os.path.join(dir_path, 'accServer.exe')
-    server_subfolder_exe_path = os.path.join(dir_path, 'server', 'accServer.exe')
-
-    final_path = None
-    if os.path.exists(server_exe_path):
-        final_path = dir_path
-    elif os.path.exists(server_subfolder_exe_path):
-        final_path = os.path.join(dir_path, 'server')
+    # Procura pelo accServer.exe de forma inteligente
+    found_path = None
+    # 1. Checa o diretório selecionado
+    if os.path.exists(os.path.join(dir_path, 'accServer.exe')):
+        found_path = dir_path
+    else:
+        # 2. Se não encontrou, procura em subdiretórios (até 2 níveis de profundidade)
+        for root_dir, dirs, files in os.walk(dir_path):
+            if 'accServer.exe' in files:
+                found_path = root_dir
+                break # Para no primeiro que encontrar
+            # Limita a profundidade
+            if root_dir.count(os.sep) - dir_path.count(os.sep) >= 2:
+                dirs[:] = [] # Não entra mais em subdiretórios
     
-    if not final_path:
-        return jsonify({'error': f'O arquivo "accServer.exe" não foi encontrado na pasta selecionada nem em sua subpasta "server": {dir_path}'}), 400
+    if not found_path:
+        return jsonify({'error': f'O "accServer.exe" não foi encontrado na pasta selecionada ou em seus subdiretórios: {dir_path}'}), 400
 
-    save_server_dir(final_path)
-    # Atualiza a variável global para refletir a mudança imediatamente
-    global SERVER_DIR, CFG_DIR
-    SERVER_DIR = final_path
-    CFG_DIR = os.path.join(SERVER_DIR, 'cfg')
-    os.makedirs(CFG_DIR, exist_ok=True)
+    save_server_dir(found_path)
     
-    return jsonify({'status': f'Pasta do servidor atualizada com sucesso! O caminho foi ajustado para: {final_path}', 'path': final_path})
+    return jsonify({'status': f'Pasta do servidor atualizada com sucesso!', 'path': found_path})
 
 
 @app.route('/api/pick_entrylist_dir', methods=['POST'])
@@ -341,39 +414,7 @@ def pick_entrylist_dir():
     return jsonify({'status': 'Pasta selecionada.', 'path': dir_path})
 
 
-@app.route('/api/create_shortcut_dialog', methods=['POST'])
-def create_shortcut_dialog():
-    """Abre um diálogo para escolher onde salvar o atalho."""
-    if not tk:
-        return jsonify({'error': 'Tkinter não está instalado. Criação de atalho indisponível.'}), 500
 
-    root = tk.Tk()
-    root.withdraw()
-    root.attributes("-topmost", True)
-
-    file_path = filedialog.asksaveasfilename(
-        title='Salvar atalho do servidor como...',
-        defaultextension=".bat",
-        initialfile='ACC_Server_Launcher.bat',
-        filetypes=[("Batch files", "*.bat"), ("All files", "*.*")]
-    )
-    root.destroy()
-    
-    if not file_path:
-        return jsonify({'status': 'Criação de atalho cancelada.'})
-
-    # Usa o SERVER_DIR atualizado
-    bat_content = f"""@echo off
-cd /d \"{SERVER_DIR}\"
-echo Iniciando servidor ACC...
-start accServer.exe
-echo Servidor iniciado. Pressione qualquer tecla para fechar...
-pause > nul
-"""
-    with open(file_path, 'w', encoding='utf-8') as f:
-        f.write(bat_content)
-        
-    return jsonify({'status': f'Atalho criado em: {file_path}'})
 
 @app.route('/api/save_entrylist_as', methods=['POST'])
 def save_entrylist_as():
@@ -458,13 +499,19 @@ def load_preset(name):
 @app.route('/api/logs')
 def get_logs():
     """Retorna as últimas linhas do log do servidor (se existir)"""
-    log_dir = os.path.join(SERVER_DIR, 'log')
+    server_dir = get_server_dir()
+    if not server_dir:
+        return jsonify({'logs': ['O diretório do servidor não está configurado.']})
+
+    log_dir = os.path.join(server_dir, 'log')
     if not os.path.exists(log_dir):
         return jsonify({'logs': ['Nenhum log encontrado.']})
+    
     # Pega o arquivo de log mais recente
     log_files = [f for f in os.listdir(log_dir) if f.endswith('.log')]
     if not log_files:
         return jsonify({'logs': ['Nenhum arquivo de log.']})
+    
     latest = max(log_files, key=lambda f: os.path.getmtime(os.path.join(log_dir, f)))
     with open(os.path.join(log_dir, latest), 'r', encoding='utf-8', errors='ignore') as f:
         lines = f.readlines()[-50:]  # últimas 50 linhas
