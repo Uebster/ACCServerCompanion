@@ -163,16 +163,14 @@ DEFAULT_CONFIG = {
     },
     "assistRules.json": {
         "stabilityControlLevelMax": 100,
-        "tractionControl": -1,
-        "abs": -1,
-        "autoClutch": 0,
-        "autoBlip": 0,
-        "autoShift": 0,
-        "idealLine": 0,
-        "disableAutoLights": 0,
-        "disableAutoWiper": 0,
-        "disableAutoEngineStart": 0,
-        "disableAutoPitLimiter": 0
+        "disableAutoClutch": 0, # 0 = Não (Permitido), 1 = Sim (Forçar Desligado)
+        "disableAutoGear": 0,   # 0 = Não (Permitido), 1 = Sim (Forçar Desligado)
+        "disableIdealLine": 1,  # 0 = Não (Permitido), 1 = Sim (Forçar Desligado)
+        "disableAutosteer": 0,  # 0 = Não (Permitido), 1 = Sim (Forçar Desligado)
+        "disableAutoLights": 0, # 0 = Não, 1 = Sim
+        "disableAutoWiper": 0,  # 0 = Não, 1 = Sim
+        "disableAutoEngineStart": 0, # 0 = Não, 1 = Sim
+        "disableAutoPitLimiter": 0 # 0 = Não, 1 = Sim
     },
     "bop.json": {
         "entries": [
