@@ -232,9 +232,25 @@ function accApp() {
         },
         addSession() { this.event.sessions.push({ sessionType: 'P', sessionDurationMinutes: 20, hourOfDay: 10, dayOfWeekend: 1, timeMultiplier: 1 }); },
         removeSession(idx) { this.event.sessions.splice(idx, 1); },
-        addEntryListEntry() { if (!this.entrylist.entries) this.entrylist.entries = []; this.entrylist.entries.push({ name: '', playerID: '', team: '', isAdmin: false }); },
+        addEntryListEntry() { 
+            if (!this.entrylist.entries) this.entrylist.entries = []; 
+            this.entrylist.entries.push({ 
+                raceNumber: -1,
+                forcedCarModel: -1,
+                overrideDriverInfo: 1,
+                isServerAdmin: 0,
+                drivers: [
+                    {
+                        firstName: '',
+                        lastName: '',
+                        shortName: '',
+                        playerID: 'S'
+                    }
+                ]
+            }); 
+        },
         removeEntryListEntry(idx) { this.entrylist.entries.splice(idx, 1); },
-        addBopEntry() { if (!this.bop.entries) this.bop.entries = []; this.bop.entries.push({ carClass: '', powerAdjustment: 0, weightAdjustment: 0 }); },
+        addBopEntry() { if (!this.bop.entries) this.bop.entries = []; this.bop.entries.push({ track: '', carModel: 0, ballastKg: 0, restrictor: 0 }); },
         removeBopEntry(idx) { this.bop.entries.splice(idx, 1); },
 
         // Outros métodos

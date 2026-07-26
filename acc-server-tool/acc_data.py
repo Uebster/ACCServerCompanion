@@ -145,7 +145,7 @@ DEFAULT_CONFIG = {
     },
     "eventRules.json": {
         "qualifyStandingType": 1,
-        "pitwindowLengthSec": -1,
+        "pitWindowLengthSec": -1,
         "driverStintTimeSec": -1,
         "mandatoryPitstopCount": 0,
         "maxTotalDrivingTime": -1,
@@ -153,7 +153,7 @@ DEFAULT_CONFIG = {
         "isRefuellingAllowedInRace": True,
         "isRefuellingTimeFixed": False,
         "isMandatoryPitstopRefuellingRequired": False,
-        "isMandatoryPitstopTypeChangeRequired": False,
+        "isMandatoryPitstopTyreChangeRequired": False,
         "isMandatoryPitstopSwapDriverRequired": False,
         "tyreSetCount": 50,
         "configVersion": 1
@@ -174,7 +174,12 @@ DEFAULT_CONFIG = {
     },
     "bop.json": {
         "entries": [
-            {"carClass": "GT3", "powerAdjustment": 0, "weightAdjustment": 0}
+            {
+                "track": "monza",
+                "carModel": 1,
+                "ballastKg": 0,
+                "restrictor": 0
+            }
         ]
     }
 }

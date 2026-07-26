@@ -342,12 +342,20 @@
                         <div class="advanced-card">
                             <h3>Lista de pilotos</h3>
                             <template x-for="(entry, idx) in entrylist.entries" :key="idx">
-                                <div class="entry-row">
-                                    <input type="text" x-model="entry.name" placeholder="Nome">
-                                    <input type="text" x-model="entry.playerID" placeholder="SteamID">
-                                    <input type="text" x-model="entry.team" placeholder="Equipe">
-                                    <label class="inline-check"><input type="checkbox" x-model="entry.isAdmin"> Admin</label>
-                                    <button @click="removeEntryListEntry(idx)" class="btn-remove">✕</button>
+                                <div class="entry-group">
+                                    <div class="entry-row">
+                                        <input type="text" x-model="entry.drivers[0].firstName" placeholder="Nome">
+                                        <input type="text" x-model="entry.drivers[0].lastName" placeholder="Sobrenome">
+                                        <input type="text" x-model="entry.drivers[0].shortName" placeholder="Apelido (3 letras)">
+                                        <input type="text" x-model="entry.drivers[0].playerID" placeholder="SteamID (Ex: S76...)">
+                                        <button @click="removeEntryListEntry(idx)" class="btn-remove">✕</button>
+                                    </div>
+                                    <div class="entry-row-options">
+                                        <label class="inline-check tooltip-label" data-tooltip="Número do carro. Deixe -1 para automático."><input type="number" x-model.number="entry.raceNumber" style="width: 80px;"> Num.</label>
+                                        <label class="inline-check tooltip-label" data-tooltip="ID do modelo do carro para forçar. Deixe -1 para não forçar."><input type="number" x-model.number="entry.forcedCarModel" style="width: 80px;"> Car ID</label>
+                                        <label class="inline-check tooltip-label" data-tooltip="Marque para dar privilégios de admin no servidor."><input type="checkbox" x-model="entry.isServerAdmin" :true-value="1" :false-value="0"> Admin</label>
+                                        <label class="inline-check tooltip-label" data-tooltip="Marque para sobrescrever as informações do piloto com as definidas aqui."><input type="checkbox" x-model="entry.overrideDriverInfo" :true-value="1" :false-value="0"> Override</label>
+                                    </div>
                                 </div>
                             </template>
                             <button @click="addEntryListEntry()" class="btn-add">+ Adicionar piloto</button>
@@ -360,11 +368,11 @@
                         <div class="advanced-card">
                             <h3>Balance of Performance</h3>
                             <template x-for="(item, idx) in bop.entries" :key="idx">
-                                <div class="bop-row">
-                                    <input type="text" x-model="item.carClass" placeholder="Classe">
-                                    <input type="number" x-model.number="item.powerAdjustment" placeholder="Power">
-                                    <input type="number" x-model.number="item.weightAdjustment" placeholder="Weight">
-                                    <button @click="removeBopEntry(idx)" class="btn-remove">✕</button>
+                                <div class="entry-row">
+                                    <input type="text" x-model="item.track" placeholder="Pista (ex: monza)">
+                                    <input type="number" x-model.number="item.carModel" placeholder="ID do Carro">
+                                    <input type="number" x-model.number="item.ballastKg" placeholder="Lastro (kg)">
+                                    <input type="number" x-model.number="item.restrictor" placeholder="Restritor (%)">
                                 </div>
                             </template>
                             <button @click="addBopEntry()" class="btn-add">+ Adicionar BoP</button>

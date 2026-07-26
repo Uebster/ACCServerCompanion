@@ -119,8 +119,18 @@ input[type="checkbox"] { width: 20px; height: 20px; accent-color: var(--accent);
     justify-content: space-between;
     margin-bottom: 8px; /* Adicionado para espaçamento */
 }
-.entry-row, .bop-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 8px; align-items: center; margin-bottom: 8px; }
-.entry-row input[type="text"], .entry-row input[type="number"], .bop-row input[type="text"], .bop-row input[type="number"] { width: 100%; }
+.entry-group {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px;
+    margin-bottom: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.entry-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 8px; align-items: center; }
+.entry-row-options { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
+.entry-row input[type="text"], .entry-row input[type="number"] { width: 100%; }
 .inline-check { display: flex; align-items: center; gap: 8px; justify-content: flex-start; }
 .admin-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-top: 16px; }
 .admin-list { list-style: none; display: grid; gap: 8px; padding: 0; margin: 0; }
